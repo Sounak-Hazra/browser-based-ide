@@ -4,6 +4,7 @@ import path from "path";
 import fs from "fs/promises"
 import { NextRequest, NextResponse } from "next/server";
 import Playground from "@/models/playground.models";
+import TemplatesFilesModel from "@/models/templateFile.models";
 
 
 function validateJson(data: any): boolean{
@@ -38,13 +39,22 @@ export async function GET(
         const templateKey = playground.template as keyof typeof templatePaths
         const templatePath = templatePaths[templateKey]
 
-
         const inputPath = path.join(process.cwd(), templatePath)
         const outPutPath = path.join(process.cwd(), `output/${templateKey}.json`)
 
         await saveTemplateStructureToJson(inputPath, outPutPath)
         const result = await readTemplateStructureFromJson(outPutPath)
 
+        //Modified to save template file if not exists
+        if(!playground.templateFiles.length){
+            const templateFile = await TemplatesFilesModel.create({
+                playgroundId: playground._id,
+                content: JSON.stringify(result)
+            })
+
+            playground.templateFiles.push(templateFile._id)
+            await playground.save()
+        }
 
         if (!validateJson(result.items)) {
             return NextResponse.json({

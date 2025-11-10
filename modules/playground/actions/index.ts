@@ -43,7 +43,7 @@ export async function getPlaygroundById(id: string): Promise<ApiSuccessResponse<
 
 
 
-export async function SaveUpdatedCode(playgroundId: string, data: TemplateFolder): Promise<ApiSuccessResponse<PlaygroundData> | ApiErrorResponse> {
+export async function SaveUpdatedCode(playgroundId: string, data: TemplateFolder): Promise<ApiSuccessResponse<TemplateFolder> | ApiErrorResponse> {
     try {
         const user = await currentUser()
 
@@ -73,7 +73,8 @@ export async function SaveUpdatedCode(playgroundId: string, data: TemplateFolder
 
         return {
             success: true,
-            data: JSON.parse(JSON.stringify(updatedPlayGround)),
+            data: JSON.parse(JSON.stringify(updatedPlayGround.content)), //! Change here
+            // data: JSON.parse(JSON.stringify(updatedPlayGround)),
             message: "Playground fetched successfully"
         }
 

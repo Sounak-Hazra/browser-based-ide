@@ -94,3 +94,10 @@ export const templateKeys = {
   vue: "VUE",
   webPlatform: "WEB_PLATFORM",
 };
+
+export const perpous = {
+  frontend: "frontend",
+  backend: "backend",
+  fullstack: "fullstack",
+  general: "general"
+} as const

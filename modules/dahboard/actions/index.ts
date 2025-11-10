@@ -44,13 +44,14 @@ export async function createPlayground(data: PlaygroundCreate): Promise<ApiSucce
         await connectDB()
         const user = await currentUser()
 
-        const { title, description, template } = data
+        const { title, description, template, perpous } = data
 
         const playGround = await Playground.create({
             title,
             description,
             template,
-            userId: user?._id!
+            userId: user?._id!,
+            perpous
         })
 
         revalidatePath("/dashboard")

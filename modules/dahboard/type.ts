@@ -1,5 +1,5 @@
 import { TEMPLATES } from "@/lib/constants"
-import { templateKeys } from "@/lib/template"
+import { templateKeys, perpous } from "@/lib/template"
 
 export interface User {
     _id: string
@@ -37,7 +37,8 @@ export interface Favourit{
 export interface PlaygroundCreate{
     title: string,
     description: string,
-    template: (typeof templateKeys)[keyof typeof templateKeys]
+    template: (typeof templateKeys)[keyof typeof templateKeys],
+    perpous: keyof typeof perpous
 }
 
 export interface PlaygroundFetch{
@@ -50,5 +51,6 @@ export interface PlaygroundFetch{
     updatedAt: Date,
     starred?: boolean,
     icon?: string,
-    favourit?: Favourit
+    favourit?: Favourit,
+    perpous: keyof typeof perpous
 }
