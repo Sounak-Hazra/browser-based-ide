@@ -1,4 +1,4 @@
-import { templateKeys } from "./template"
+import { templateKeys } from "./template.ts"
 
 export const TEMPLATES = [
     "REACT",

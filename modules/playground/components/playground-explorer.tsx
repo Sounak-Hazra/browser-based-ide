@@ -88,7 +88,6 @@ export function TemplateFileTree({
 }: TemplateFileTreeProps) {
 
 
-    console.log("TemplateFileTree data:", data);
 
     const isRootFolder = data && typeof data === "object" && "folderName" in data;
     const [isNewFileDialogOpen, setIsNewFileDialogOpen] = React.useState(false);

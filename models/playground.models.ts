@@ -1,7 +1,8 @@
-import { TEMPLATES } from "@/lib/constants";
+import { TEMPLATES } from "../lib/constants.ts";
 import mongoose from "mongoose";
-import "./user.models"
-import { templatePaths } from "@/lib/template";
+import "./user.models.ts"
+// import { perpous, templatePaths } from "@/lib/template";
+import { templatePaths, perpous } from "../lib/template.ts";
 
 
 const playgroundSchema = new mongoose.Schema({
@@ -16,6 +17,10 @@ const playgroundSchema = new mongoose.Schema({
         type: String,
         enum: Object.keys(templatePaths),
         required: true
+    },
+    perpous:{
+        type: String,
+        enum: Object.keys(perpous),
     },
     favourit: {
         type: mongoose.Types.ObjectId,

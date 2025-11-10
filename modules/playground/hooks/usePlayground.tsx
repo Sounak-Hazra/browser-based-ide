@@ -16,10 +16,11 @@ interface UsePlaygroundreturn {
     isLoading: boolean,
     error: string,
     loadPlayground: () => Promise<void>,
-    saveTemplate: (data: TemplateFolder) => Promise<PlaygroundData | undefined>
+    // saveTemplate: (data: TemplateFolder) => Promise<PlaygroundData | undefined> //Changed
+    saveTemplate: (data: TemplateFolder) => Promise<void>
+
 
 }
-
 
 export const usePlayground = (id: string): UsePlaygroundreturn => {
     const [playgroundData, setPlaygroundData] = useState<PlaygroundData | null>(null);
@@ -53,7 +54,7 @@ export const usePlayground = (id: string): UsePlaygroundreturn => {
             } else {
                 const res = await fetch(`/api/template/${id}`);
 
-                if (!res.ok) throw new Error("Failed to load template: ${ res.status ");
+                if (!res.ok) throw new Error(`Failed to load template: ${ res.status }`);
 
                 const templateRes = await res.json();
 
@@ -79,7 +80,7 @@ export const usePlayground = (id: string): UsePlaygroundreturn => {
         }
     }, [id])
 
-    const saveTemplateData = useCallback(async (data: TemplateFolder): Promise<PlaygroundData | undefined> => {
+    const saveTemplateData = useCallback(async (data: TemplateFolder): Promise<void> => {
         try {
             const val = await SaveUpdatedCode(id, data);
             const newData = setTemplateData(data);
@@ -88,7 +89,9 @@ export const usePlayground = (id: string): UsePlaygroundreturn => {
             if(!val.data) {
                 return undefined;
             }
-            return val.data;
+            // return val?.data.TemplateFiles; Changed
+            // return val?.data;
+
         } catch (error) {
             console.error("Error saving template data:", error);
             toast.error("Failed to save changes");
