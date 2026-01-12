@@ -6,11 +6,10 @@ import { Loader2 } from 'lucide-react';
 
 
 interface RunButtonProps {
-    onClickRun: () => Promise<any>;
-    isLoading?: boolean;
+    onClickRun: () => void;
 }
 
-const RunButton = ({ onClickRun, isLoading }: RunButtonProps) => {
+const RunButton = ({ onClickRun }: RunButtonProps) => {
 
     const handleClick = async () => {
         onClickRun();
@@ -18,13 +17,14 @@ const RunButton = ({ onClickRun, isLoading }: RunButtonProps) => {
 
     return (
         <>
-            {/* <Button variant={'default'} onClick={handleClick} disabled={isLoading}>
-                {
-                    isLoading ?
-                        <Loader2 size={5} className="animate-spin" />:
-                        <Play size={5} />
-                }
-            </Button> */}
+            <Button
+                size="sm"
+                variant="default"
+                onClick={handleClick}
+            >
+                <Play className="h-4 w-4" />
+
+            </Button >
         </>
     )
 }

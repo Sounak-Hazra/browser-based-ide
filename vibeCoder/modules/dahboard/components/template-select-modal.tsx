@@ -28,7 +28,7 @@ import {
 import Image from "next/image";
 import { useState } from "react";
 import { PlaygroundCreate } from "../type";
-import { templateKeys } from "@/lib/template";
+import { templateKeys, templates } from "@/lib/template";
 
 // TemplateSelectionModal.tsx
 type TemplateSelectionModalProps = {
@@ -38,163 +38,164 @@ type TemplateSelectionModalProps = {
 };
 
 interface TemplateOption {
-    id: keyof typeof templateKeys;
-    name: string;
-    description: string;
-    icon: string;
-    color: string;
-    popularity: number;
-    tags: string[];
-    features: string[];
-    category: "frontend" | "backend" | "fullstack" | "general";
+  id: keyof typeof templateKeys;
+  name: string;
+  description: string;
+  icon: string;
+  color: string;
+  popularity: number;
+  tags: readonly string[];
+  features: readonly string[];
+  category: "frontend" | "backend" | "fullstack" | "general";
 }
 
-const templates: TemplateOption[] = [
-    {
-      id: "react",
-      name: "React",
-      description:
-        "A JavaScript library for building user interfaces with component-based architecture",
-      icon: "/globe.svg",
-      color: "#61DAFB",
-      popularity: 5,
-      tags: ["UI", "Frontend", "JavaScript"],
-      features: ["Component-Based", "Virtual DOM", "JSX Support"],
-      category: "frontend",
-    },
-    {
-      id: "nextjs",
-      name: "Next.js",
-      description:
-        "The React framework for production with server-side rendering and static site generation",
-      icon: "/globe.svg",
-      color: "#000000",
-      popularity: 4,
-      tags: ["React", "SSR", "Fullstack"],
-      features: ["Server Components", "API Routes", "File-based Routing"],
-      category: "fullstack",
-    },
-    {
-      id: "expressjs",
-      name: "Express-JS",
-      description:
-        "Fast, unopinionated, minimalist web framework for Node.js to build APIs and web applications",
-      icon: "/globe.svg",
-      color: "#000000",
-      popularity: 4,
-      tags: ["Node.js", "API", "Backend"],
-      features: ["Middleware", "Routing", "HTTP Utilities"],
-      category: "backend",
-    },
-    {
-      id: "vue",
-      name: "Vue.js",
-      description:
-        "Progressive JavaScript framework for building user interfaces with an approachable learning curve",
-      icon: "/globe.svg",
-      color: "#4FC08D",
-      popularity: 4,
-      tags: ["UI", "Frontend", "JavaScript"],
-      features: ["Reactive Data Binding", "Component System", "Virtual DOM"],
-      category: "frontend",
-    },
-    {
-      id: "hono",
-      name: "Hono",
-      description:
-        "Fast, lightweight, built on Web Standards. Support for any JavaScript runtime.",
-      icon: "/globe.svg",
-      color: "#e36002",
-      popularity: 3,
-      tags: ["Node.js", "TypeScript", "Backend"],
-      features: [
-        "Dependency Injection",
-        "TypeScript Support",
-        "Modular Architecture",
-      ],
-      category: "backend",
-    },
-    {
-      id: "angular",
-      name: "Angular",
-      description:
-        "Angular is a web framework that empowers developers to build fast, reliable applications.",
-      icon: "/globe.svg",
-      color: "#DD0031",
-      popularity: 3,
-      tags: ["Frontend", "Fullstack", "JavaScript"],
-      features: [
-        "Reactive Data Binding",
-        "Component System",
-        "Virtual DOM",
-        "Dependency Injection",
-        "TypeScript Support",
-      ],
-      category: "fullstack",
-    },
+
+// const templates: TemplateOption[] = [
+//     {
+//       id: "react",
+//       name: "React",
+//       description:
+//         "A JavaScript library for building user interfaces with component-based architecture",
+//       icon: "/globe.svg",
+//       color: "#61DAFB",
+//       popularity: 5,
+//       tags: ["UI", "Frontend", "JavaScript"],
+//       features: ["Component-Based", "Virtual DOM", "JSX Support"],
+//       category: "frontend",
+//     },
+//     {
+//       id: "nextjs",
+//       name: "Next.js",
+//       description:
+//         "The React framework for production with server-side rendering and static site generation",
+//       icon: "/globe.svg",
+//       color: "#000000",
+//       popularity: 4,
+//       tags: ["React", "SSR", "Fullstack"],
+//       features: ["Server Components", "API Routes", "File-based Routing"],
+//       category: "fullstack",
+//     },
+//     {
+//       id: "expressjs",
+//       name: "Express-JS",
+//       description:
+//         "Fast, unopinionated, minimalist web framework for Node.js to build APIs and web applications",
+//       icon: "/globe.svg",
+//       color: "#000000",
+//       popularity: 4,
+//       tags: ["Node.js", "API", "Backend"],
+//       features: ["Middleware", "Routing", "HTTP Utilities"],
+//       category: "backend",
+//     },
+//     {
+//       id: "vue",
+//       name: "Vue.js",
+//       description:
+//         "Progressive JavaScript framework for building user interfaces with an approachable learning curve",
+//       icon: "/globe.svg",
+//       color: "#4FC08D",
+//       popularity: 4,
+//       tags: ["UI", "Frontend", "JavaScript"],
+//       features: ["Reactive Data Binding", "Component System", "Virtual DOM"],
+//       category: "frontend",
+//     },
+//     {
+//       id: "hono",
+//       name: "Hono",
+//       description:
+//         "Fast, lightweight, built on Web Standards. Support for any JavaScript runtime.",
+//       icon: "/globe.svg",
+//       color: "#e36002",
+//       popularity: 3,
+//       tags: ["Node.js", "TypeScript", "Backend"],
+//       features: [
+//         "Dependency Injection",
+//         "TypeScript Support",
+//         "Modular Architecture",
+//       ],
+//       category: "backend",
+//     },
+//     {
+//       id: "angular",
+//       name: "Angular",
+//       description:
+//         "Angular is a web framework that empowers developers to build fast, reliable applications.",
+//       icon: "/globe.svg",
+//       color: "#DD0031",
+//       popularity: 3,
+//       tags: ["Frontend", "Fullstack", "JavaScript"],
+//       features: [
+//         "Reactive Data Binding",
+//         "Component System",
+//         "Virtual DOM",
+//         "Dependency Injection",
+//         "TypeScript Support",
+//       ],
+//       category: "fullstack",
+//     },
   
-    // 🧠 New Section: General Purpose Compilers
-    {
-      id: "c",
-      name: "C",
-      description:
-        "General-purpose, low-level programming language known for its performance and control over hardware.",
-      icon: "/c.svg",
-      color: "#A8B9CC",
-      popularity: 5,
-      tags: ["Compiler", "Low-Level", "Systems"],
-      features: ["Manual Memory Management", "Procedural", "Fast Compilation"],
-      category: "general",
-    },
-    {
-      id: "cpp",
-      name: "C++",
-      description:
-        "An extension of C with object-oriented programming, widely used for performance-critical applications.",
-      icon: "/cpp.svg",
-      color: "#00599C",
-      popularity: 5,
-      tags: ["Compiler", "OOP", "Systems"],
-      features: ["OOP Support", "Templates", "High Performance"],
-      category: "general",
-    },
-    {
-      id: "python",
-      name: "Python",
-      description:
-        "A high-level, interpreted programming language known for readability and versatility.",
-      icon: "/python.svg",
-      color: "#3776AB",
-      popularity: 5,
-      tags: ["Compiler", "Interpreted", "Scripting"],
-      features: ["Dynamic Typing", "Batteries Included", "Easy Syntax"],
-      category: "general",
-    },
-    {
-      id: "java",
-      name: "Java",
-      description:
-        "A versatile, object-oriented language designed for cross-platform applications.",
-      icon: "/java.svg",
-      color: "#E76F00",
-      popularity: 4,
-      tags: ["Compiler", "OOP", "Cross-Platform"],
-      features: ["JVM Based", "Strong Typing", "Cross-Platform"],
-      category: "general",
-    },
-    {
-      id: "node",
-      name: "Node.js",
-      description:
-        "JavaScript runtime built on Chrome's V8 engine, great for server-side or general scripting use.",
-      icon: "/node.svg",
-      color: "#68A063",
-      popularity: 5,
-      tags: ["JavaScript", "Runtime", "Scripting"],
-      features: ["Non-blocking I/O", "Package Ecosystem", "Event Driven"],
-      category: "general",
-    },
-  ] as const;
+//     // 🧠 New Section: General Purpose Compilers
+//     {
+//       id: "c",
+//       name: "C",
+//       description:
+//         "General-purpose, low-level programming language known for its performance and control over hardware.",
+//       icon: "/c.svg",
+//       color: "#A8B9CC",
+//       popularity: 5,
+//       tags: ["Compiler", "Low-Level", "Systems"],
+//       features: ["Manual Memory Management", "Procedural", "Fast Compilation"],
+//       category: "general",
+//     },
+//     {
+//       id: "cpp",
+//       name: "C++",
+//       description:
+//         "An extension of C with object-oriented programming, widely used for performance-critical applications.",
+//       icon: "/cpp.svg",
+//       color: "#00599C",
+//       popularity: 5,
+//       tags: ["Compiler", "OOP", "Systems"],
+//       features: ["OOP Support", "Templates", "High Performance"],
+//       category: "general",
+//     },
+//     {
+//       id: "python",
+//       name: "Python",
+//       description:
+//         "A high-level, interpreted programming language known for readability and versatility.",
+//       icon: "/python.svg",
+//       color: "#3776AB",
+//       popularity: 5,
+//       tags: ["Compiler", "Interpreted", "Scripting"],
+//       features: ["Dynamic Typing", "Batteries Included", "Easy Syntax"],
+//       category: "general",
+//     },
+//     {
+//       id: "java",
+//       name: "Java",
+//       description:
+//         "A versatile, object-oriented language designed for cross-platform applications.",
+//       icon: "/java.svg",
+//       color: "#E76F00",
+//       popularity: 4,
+//       tags: ["Compiler", "OOP", "Cross-Platform"],
+//       features: ["JVM Based", "Strong Typing", "Cross-Platform"],
+//       category: "general",
+//     },
+//     {
+//       id: "node",
+//       name: "Node.js",
+//       description:
+//         "JavaScript runtime built on Chrome's V8 engine, great for server-side or general scripting use.",
+//       icon: "/node.svg",
+//       color: "#68A063",
+//       popularity: 5,
+//       tags: ["JavaScript", "Runtime", "Scripting"],
+//       features: ["Non-blocking I/O", "Package Ecosystem", "Event Driven"],
+//       category: "general",
+//     },
+//   ] as const;
   
 
 type TemplateKey = keyof typeof templateKeys;
@@ -208,7 +209,7 @@ const TemplateSelectionModal = ({
     const [selectedTemplate, setSelectedTemplate] = useState<TemplateKey | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [category, setCategory] = useState<
-        "all" | "frontend" | "backend" | "fullstack"
+        "all" | "general" | "frontend" | "backend" | "fullstack" 
     >("all");
     const [projectName, setProjectName] = useState("");
 
@@ -253,11 +254,12 @@ const TemplateSelectionModal = ({
 
             const template = templates.find((t) => t.id === selectedTemplate);
 
+            if(!template) return 
             onSubmit({
                 title: projectName || `New ${template?.name} Project`,
                 template: templateKeys[selectedTemplate as keyof typeof templateKeys] || templateKeys["react"],
-                description: template?.description || "Project description",
-                perpous: template?.category
+                description: template.description || "Project description",
+                perpous: template.category
             })
 
             onClose();
@@ -332,7 +334,7 @@ const TemplateSelectionModal = ({
                                     className="w-full sm:w-auto"
                                     onValueChange={(value) => setCategory(value as any)}
                                 >
-                                    <TabsList className="grid grid-cols-4 w-full sm:w-[400px]">
+                                    <TabsList className="grid grid-cols-5 w-full sm:w-[400px]">
                                         <TabsTrigger value="general">languages</TabsTrigger>
                                         <TabsTrigger value="all">All</TabsTrigger>
                                         <TabsTrigger value="frontend">Frontend</TabsTrigger>

@@ -7,7 +7,8 @@ import { workingDirectoryGenerator } from "@/lib/workingDirectoryGenerator";
 
 type PlaygroundRecord = { content: string | TemplateFolder } | TemplateFolder;
 
-const docker = new Docker({ socketPath: "/var/run/docker.sock" });
+// const docker = new Docker({ socketPath: "/var/run/docker.sock" });
+const docker = new Docker(); //* Chnages for windows compatibility
 
 
 export async function writeSyncContainer({
@@ -47,7 +48,8 @@ export async function writeSyncContainer({
     if(!newFiles){
       throw new Error("Failed to generate new files for container.")
     }
-    container.putArchive(newFiles, { path: workspacePath })
+    const val = await container.putArchive(newFiles, { path: workspacePath })
+    console.log("Files synced to container:", val.toString())
   } catch (error) {
     console.log(error)
     throw error

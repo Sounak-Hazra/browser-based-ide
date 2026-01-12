@@ -21,6 +21,14 @@ import TerminalComponentForGeneralLanguage from '@/modules/general-language-play
 import RunButton from '@/modules/general-language-playground/components/run-button'
 import WebContainerPreviewForGeneral from '@/modules/general-language-playground/components/terminal-preview'
 import { useDockerContainers } from '@/modules/general-language-playground/hooks/useDockerContainers'
+import { useAiSuggestion } from '@/modules/playground/hooks/useAiSuggection'
+import ToggleAI from '@/modules/playground/components/toggle-ai'
+import { useRunCommand, useRunCommandWithStats } from '@/modules/general-language-playground/hooks/useRunCommand'
+import { useSocketStore } from '@/modules/general-language-playground/states/socker.store'
+import { useXtermTerminal } from '@/modules/general-language-playground/hooks/useXtermTerminal'
+import { useContainerSocket } from '@/modules/general-language-playground/hooks/useContainerSocket'
+import { useStatsStore } from '@/modules/general-language-playground/hooks/useStatsRun'
+import RunWithStatsPopOver from '@/modules/general-language-playground/components/runWithStats'
 
 const PlaygroundHomePage = () => {
 
@@ -47,12 +55,33 @@ const PlaygroundHomePage = () => {
         handleDeleteFolder,
         handleRenameFile,
         handleRenameFolder,
-        updateFileContent
+        updateFileContent,
+        handleFindFilePath
     } = useFileExplorerForGeneralLanguage()
 
     const { containerId, error, isLoading, socketUrl, writeFileSync } = useDockerContainers({ playgroundId: id })
 
-    const lastSyncedContentRef = useRef<Map<string, string>>(new Map());
+
+
+    // const lastSyncedContentRef = useRef<Map<string, string>>(new Map());
+
+    const { run } = useRunCommand({ findFilePath: handleFindFilePath, getSocket: () => useSocketStore.getState().socket, projectId: id })
+
+    const { runWithStats } = useRunCommandWithStats({ findFilePath: handleFindFilePath, getSocket: () => useSocketStore.getState().socket, projectId: id })
+    const aiSuggestions = useAiSuggestion()
+
+    const {addStats, clearStats,clearStatsForaFile, stats} = useStatsStore()
+
+    const { term, fitAddon, searchAddon } = useXtermTerminal("dark");
+    const socket = useContainerSocket(socketUrl, term, (stats) => {
+        console.log("Received stats from socket:", stats);
+        console.log("Active File ID:", useFileExplorerForGeneralLanguage.getState().activeFileId);
+
+        const activeFileId = useFileExplorerForGeneralLanguage.getState().activeFileId;
+        if (!activeFileId) return;
+        
+        addStats(activeFileId, stats);
+    });
 
 
     useEffect(() => {
@@ -71,29 +100,30 @@ const PlaygroundHomePage = () => {
         return handleAddFile(
             newFile,
             parentPath,
-            saveTemplate
+            saveTemplate,
+            writeFileSync
         )
-    }, [handleAddFile, saveTemplate])
+    }, [handleAddFile, saveTemplate, writeFileSync]);
 
     const wrappedHandleAddFolder = useCallback(
         (newFolder: TemplateFolder, parentPath: string) => {
-            return handleAddFolder(newFolder, parentPath, saveTemplate);
+            return handleAddFolder(newFolder, parentPath, saveTemplate, writeFileSync);
         },
-        [handleAddFolder, saveTemplate]
+        [handleAddFolder, saveTemplate, containerId]
     );
 
     const wrappedHandleDeleteFile = useCallback(
         (file: TemplateFile, parentPath: string) => {
-            return handleDeleteFile(file, parentPath, saveTemplate);
+            return handleDeleteFile(file, parentPath, saveTemplate, writeFileSync);
         },
-        [handleDeleteFile, saveTemplate]
+        [handleDeleteFile, saveTemplate, containerId]
     );
 
     const wrappedHandleDeleteFolder = useCallback(
         (folder: TemplateFolder, parentPath: string) => {
-            return handleDeleteFolder(folder, parentPath, saveTemplate);
+            return handleDeleteFolder(folder, parentPath, saveTemplate, writeFileSync);
         },
-        [handleDeleteFolder, saveTemplate]
+        [handleDeleteFolder, saveTemplate, containerId]
     );
 
     const wrappedHandleRenameFile = useCallback(
@@ -108,10 +138,11 @@ const PlaygroundHomePage = () => {
                 newFilename,
                 newExtension,
                 parentPath,
-                saveTemplate
+                saveTemplate,
+                writeFileSync
             );
         },
-        [handleRenameFile, saveTemplate]
+        [handleRenameFile, saveTemplate, containerId]
     );
 
     const wrappedHandleRenameFolder = useCallback(
@@ -120,7 +151,8 @@ const PlaygroundHomePage = () => {
                 folder,
                 newFolderName,
                 parentPath,
-                saveTemplate
+                saveTemplate,
+                writeFileSync
             );
         },
         [handleRenameFolder, saveTemplate]
@@ -133,7 +165,7 @@ const PlaygroundHomePage = () => {
 
     const wrapperForCompile = useCallback((command: string) => {
         return compile(templateData!, command, id)
-    }, [templateData, id])
+    }, [templateData, id, containerId])
 
     const wrapperForCompileSelectedFile = useCallback(async () => {
         const selectedFile = openFiles.find((file) => file.id === activeFileId);
@@ -163,7 +195,7 @@ const PlaygroundHomePage = () => {
         } finally {
             setRunButtonIsLoading(false);
         }
-    }, [templateData, id, activeFileId, openFiles]);
+    }, [templateData, id, activeFileId, openFiles, containerId]);
 
     const activeFile = openFiles.find((file) => file.id === activeFileId);
     const hasUnsavedChanges = openFiles.some((file) => file.hasUnsavedChanges)
@@ -211,7 +243,7 @@ const PlaygroundHomePage = () => {
             console.log("updated templated data after update", updatedTemplateData)
 
 
-            const newTemplateData = await saveTemplate(updatedTemplateData || updatedTemplateData)
+            const newTemplateData = await saveTemplate(updatedTemplateData)
             console.log("New Template data", newTemplateData)
             // setTemplateData(newTemplateData || updatedTemplateData)
             setTemplateData(updatedTemplateData)
@@ -219,7 +251,7 @@ const PlaygroundHomePage = () => {
 
 
             if (!!writeFileSync) {
-                writeFileSync()
+                await writeFileSync()
             }
 
             const updatedOpenFiles = openFiles.map((file) =>
@@ -381,7 +413,19 @@ const PlaygroundHomePage = () => {
                             <div className="flex items-center gap-3">
                                 <Tooltip>
                                     <TooltipTrigger>
-                                        <RunButton isLoading={runButtonIsLoading} onClickRun={() => wrapperForCompileSelectedFile()} />
+                                        <RunWithStatsPopOver
+                                            stats={stats}
+                                            runWithStats={runWithStats}
+                                            clearStats={clearStats}
+                                            clearStatsForaFile={clearStatsForaFile}
+                                        />
+                                    </TooltipTrigger>
+                                    <TooltipContent>Run Code With Stats</TooltipContent>
+
+                                </Tooltip>
+                                <Tooltip>
+                                    <TooltipTrigger>
+                                        <RunButton onClickRun={run} />
                                     </TooltipTrigger>
                                     <TooltipContent>Run Code</TooltipContent>
                                 </Tooltip>
@@ -414,9 +458,11 @@ const PlaygroundHomePage = () => {
                                     <TooltipContent>Save (Ctrl + Shift + s)</TooltipContent>
                                 </Tooltip>
 
-                                <Button variant={'default'} size={"icon-sm"}>
-                                    <Bot className='size-4' />
-                                </Button>
+                                <ToggleAI
+                                    isEnabled={aiSuggestions.isEnabled}
+                                    onToggle={aiSuggestions.toggleEnabled}
+                                    suggestionLoading={aiSuggestions.loading}
+                                />
 
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -492,10 +538,22 @@ const PlaygroundHomePage = () => {
                                     <div className='flex-1'>
                                         <ResizablePanelGroup direction='horizontal' className='h-full'>
                                             <ResizablePanel defaultSize={isPreviewVisible ? 50 : 100}>
+                                                {/* <PlaygroundEditor
+                                                    activeFile={activeFile}
+                                                    content={activeFile?.content || ""}
+                                                    onContentChange={(value) => activeFileId && updateFileContent(activeFileId, value)}
+                                                /> */}
+
                                                 <PlaygroundEditor
                                                     activeFile={activeFile}
                                                     content={activeFile?.content || ""}
                                                     onContentChange={(value) => activeFileId && updateFileContent(activeFileId, value)}
+                                                    suggestion={aiSuggestions.suggestion}
+                                                    suggestionLoading={aiSuggestions.loading}
+                                                    suggestionPosition={aiSuggestions.position}
+                                                    onAcceptSuggestion={(editor, monaco) => aiSuggestions.acceptSuggestion(editor, monaco)}
+                                                    onRejectSuggestion={(editor) => aiSuggestions.rejectSuggestion(editor)}
+                                                    onTriggerSuggestion={(type, editor) => aiSuggestions.fetchSuggestion(type, editor)}
                                                 />
                                             </ResizablePanel>
 
@@ -523,6 +581,10 @@ const PlaygroundHomePage = () => {
                                                                 theme="dark"
                                                                 className="h-full"
                                                                 playgroundId={id}
+                                                                term={term.current}
+                                                                fitAddon={fitAddon.current}
+                                                                searchAddon={searchAddon.current}
+                                                                socket={socket.current}
                                                             />
                                                         </ResizablePanel>
                                                     </>

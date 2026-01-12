@@ -34,7 +34,7 @@ const playgroundSchema = new mongoose.Schema({
         type: [mongoose.Types.ObjectId],
         default: [],
         ref: "TemplatesFile"
-    }
+    },
 }, { timestamps: true })
 
 const Playground = mongoose.models.Playground || mongoose.model("Playground", playgroundSchema);

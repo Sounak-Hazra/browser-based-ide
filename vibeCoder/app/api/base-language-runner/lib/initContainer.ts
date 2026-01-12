@@ -45,18 +45,21 @@ function flattenTemplateStructure(folder: TemplateFolder, basePath = ""): FlatFi
 
 type PlaygroundRecord = { content: string | TemplateFolder } | TemplateFolder;
 
-const docker = new Docker({ socketPath: "/var/run/docker.sock" });
+// const docker = new Docker({ socketPath: "/var/run/docker.sock" });
+const docker = new Docker(); //* Chnages for windows compatibility
 
 export async function initContainer({
   userId,
   projectId,
   runId,
   playground,
+  imageName,
 }: {
   userId: string;
   projectId: string;
   runId: string;
   playground: PlaygroundRecord[];
+  imageName?: string;
 }) {
   console.log(`🟢 Initializing container for ${userId} (${projectId})`);
 
@@ -72,8 +75,8 @@ export async function initContainer({
   }
 
   const container = await docker.createContainer({
-    Image: "vibe/base-runner:latest",
-    Cmd: ["/bin/sh"],
+    Image: imageName || "vibe/base-runner:latest",
+    // Cmd: ["/bin/sh"],
     Tty: true,              // 👈 allocate terminal
     OpenStdin: true,        // 👈 keep stdin open
     StdinOnce: false,       // 👈 don’t close stdin automatically
@@ -84,7 +87,7 @@ export async function initContainer({
     ],
     HostConfig: {
       NetworkMode: "none",
-      Memory: 512 * 1024 * 1024,
+      Memory: 256 * 1024 * 1024,
       CpuQuota: 50000,
     },
   });
@@ -119,7 +122,7 @@ export async function initContainer({
       AttachStderr: true,
     });
     const stream = await exec.start({ hijack: true, stdin: false });
-    
+
     await new Promise<void>((resolve, reject) => {
       container.modem.demuxStream(stream, process.stdout, process.stderr);
       stream.on("end", resolve);
@@ -129,13 +132,22 @@ export async function initContainer({
     // 🗂️ Copy files
     const tarStream = fileTreeToTar(files);
     await container.putArchive(tarStream, { path: workspacePath });
-    console.log(`📁 Files copied into ${workspacePath}`);
-    
+
+    const fixPerms = await container.exec({
+      Cmd: ["bash", "-c", `chown -R runner:runner ${workspacePath}`],
+      User: "0", // Run as root to change ownership
+      AttachStdout: true,
+      AttachStderr: true,
+    });
+
+    await fixPerms.start({ hijack: true, stdin: false });
+
+
     return {
       containerId: container.id,
       socketUrl: `/api/container/socket/${container.id}`,
     };
-    
+
   } catch (err) {
     console.error("❌ Docker execution failed:", err);
     throw err;

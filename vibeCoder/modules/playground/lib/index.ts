@@ -14,6 +14,8 @@ export function findFilePath(
         item.filename === file.filename &&
         item.fileExtension === file.fileExtension
       ) {
+
+        console.log("pathSoFar", pathSoFar);
         return [
           ...pathSoFar,
           item.filename + (item.fileExtension ? "." + item.fileExtension : ""),
@@ -36,6 +38,7 @@ export const generateFileId = (file: TemplateFile, rootFolder: TemplateFolder): 
   // Find the file's path in the folder structure
   const path = findFilePath(file, rootFolder)?.replace(/^\/+/, '') || '';
   
+  console.log("Path ", path)
   // Handle empty/undefined file extension
   const extension = file.fileExtension?.trim();
   const extensionSuffix = extension ? `.${extension}` : '';

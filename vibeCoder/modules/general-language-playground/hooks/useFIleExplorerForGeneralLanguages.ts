@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { toast } from "sonner";
 
-import { generateFileId } from '@/modules/playground/lib';
-import { TemplateFile , TemplateFolder} from '@/modules/playground/lib/path-to-json';
+import { findFilePath, generateFileId } from '@/modules/playground/lib';
+import { TemplateFile, TemplateFolder } from '@/modules/playground/lib/path-to-json';
 
 interface OpenFile extends TemplateFile {
     id: string,
@@ -44,15 +44,17 @@ interface FileExplorerState {
         newFile: TemplateFile,
         parentPath: string,
         // saveTemplateData: (data: TemplateFolder) => Promise<SaveTemplateDataReturnType | undefined>
-        saveTemplateData: (data: TemplateFolder) => Promise<void>
-        
+        saveTemplateData: (data: TemplateFolder) => Promise<void>,
+        writeFileSync: () => Promise<void>
+
     ) => Promise<void>
 
     handleAddFolder: (
         newFolder: TemplateFolder,
         parentPath: string,
         // saveTemplateData: (data: TemplateFolder) => Promise<SaveTemplateDataReturnType | undefined>
-        saveTemplateData: (data: TemplateFolder) => Promise<void>
+        saveTemplateData: (data: TemplateFolder) => Promise<void>,
+        writeFileSync: () => Promise<void>
 
     ) => Promise<void>
 
@@ -60,14 +62,16 @@ interface FileExplorerState {
         file: TemplateFile,
         parentPath: string,
         // saveTemplateData: (data: TemplateFolder) => Promise<SaveTemplateDataReturnType | undefined>
-        saveTemplateData: (data: TemplateFolder) => Promise<void>
+        saveTemplateData: (data: TemplateFolder) => Promise<void>,
+        writeFileSync: () => Promise<void>
     ) => Promise<void>
 
     handleDeleteFolder: (
         folder: TemplateFolder,
         parentPath: string,
         // saveTemplateData: (data: TemplateFolder) => Promise<SaveTemplateDataReturnType | undefined>
-        saveTemplateData: (data: TemplateFolder) => Promise<void>
+        saveTemplateData: (data: TemplateFolder) => Promise<void>,
+        writeFileSync: () => Promise<void>
 
     ) => Promise<void>
 
@@ -77,7 +81,8 @@ interface FileExplorerState {
         newFileExtension: string,
         parentPath: string,
         // saveTemplateData: (data: TemplateFolder) => Promise<SaveTemplateDataReturnType | undefined>
-        saveTemplateData: (data: TemplateFolder) => Promise<void>
+        saveTemplateData: (data: TemplateFolder) => Promise<void>,
+        writeFileSync: () => Promise<void>
 
     ) => Promise<void>
 
@@ -86,11 +91,14 @@ interface FileExplorerState {
         newFolderName: string,
         parentPath: string,
         // saveTemplateData: (data: TemplateFolder) => Promise<SaveTemplateDataReturnType | undefined>
-        saveTemplateData: (data: TemplateFolder) => Promise<void>
+        saveTemplateData: (data: TemplateFolder) => Promise<void>,
+        writeFileSync: () => Promise<void>
 
     ) => Promise<void>
 
     updateFileContent: (fileId: string, content: string) => void
+
+    handleFindFilePath: () => { parentFolderPath: string; fullFilePath: string, fileNameWithExtension: string } | undefined;
 }
 
 
@@ -176,7 +184,7 @@ export const useFileExplorerForGeneralLanguage = create<FileExplorerState>((set,
     },
 
 
-    handleAddFile: async (newFile, parentPath, saveTemplateData) => {
+    handleAddFile: async (newFile, parentPath, saveTemplateData, writeFileSync) => {
         const { templateData } = get()
 
         if (!templateData) return
@@ -202,6 +210,8 @@ export const useFileExplorerForGeneralLanguage = create<FileExplorerState>((set,
 
             await saveTemplateData(updatedTemplateData)
 
+            await writeFileSync()
+
             get().openFile(newFile)
         } catch (error) {
             console.log(error)
@@ -210,8 +220,9 @@ export const useFileExplorerForGeneralLanguage = create<FileExplorerState>((set,
         }
     },
 
-    handleAddFolder: async (newFolder, parentPath, saveTemplateData) => {
+    handleAddFolder: async (newFolder, parentPath, saveTemplateData, writeFileSync) => {
         const { templateData } = get();
+        console.log("previous template data", templateData)
         if (!templateData) return;
 
         try {
@@ -231,9 +242,12 @@ export const useFileExplorerForGeneralLanguage = create<FileExplorerState>((set,
             currentFolder.items.push(newFolder);
             set({ templateData: updatedTemplateData });
             toast.success(`Created folder: ${newFolder.folderName}`);
+            console.log("Updated template data", updatedTemplateData)
 
             // Use the passed saveTemplateData function
             await saveTemplateData(updatedTemplateData);
+
+            await writeFileSync()
 
         } catch (error) {
             console.error("Error adding folder:", error);
@@ -241,7 +255,7 @@ export const useFileExplorerForGeneralLanguage = create<FileExplorerState>((set,
         }
     },
 
-    handleDeleteFile: async (file, parentPath, saveTemplateData) => {
+    handleDeleteFile: async (file, parentPath, saveTemplateData, writeFileSync) => {
         const { templateData, openFiles } = get();
         if (!templateData) return;
 
@@ -282,6 +296,7 @@ export const useFileExplorerForGeneralLanguage = create<FileExplorerState>((set,
 
             // Use the passed saveTemplateData function
             await saveTemplateData(updatedTemplateData);
+            await writeFileSync()
             toast.success(`Deleted file: ${file.filename}.${file.fileExtension}`);
         } catch (error) {
             console.error("Error deleting file:", error);
@@ -289,7 +304,7 @@ export const useFileExplorerForGeneralLanguage = create<FileExplorerState>((set,
         }
     },
 
-    handleDeleteFolder: async (folder, parentPath, saveTemplateData) => {
+    handleDeleteFolder: async (folder, parentPath, saveTemplateData, writeFileSync) => {
         const { templateData } = get();
         if (!templateData) return;
 
@@ -335,6 +350,7 @@ export const useFileExplorerForGeneralLanguage = create<FileExplorerState>((set,
 
             // Use the passed saveTemplateData function
             await saveTemplateData(updatedTemplateData);
+            await writeFileSync()
             toast.success(`Deleted folder: ${folder.folderName}`);
         } catch (error) {
             console.error("Error deleting folder:", error);
@@ -347,7 +363,8 @@ export const useFileExplorerForGeneralLanguage = create<FileExplorerState>((set,
         newFilename,
         newExtension,
         parentPath,
-        saveTemplateData
+        saveTemplateData,
+        writeFileSync
     ) => {
         const { templateData, openFiles, activeFileId } = get();
         if (!templateData) return;
@@ -408,6 +425,7 @@ export const useFileExplorerForGeneralLanguage = create<FileExplorerState>((set,
 
                 // Use the passed saveTemplateData function
                 await saveTemplateData(updatedTemplateData);
+                await writeFileSync()
                 toast.success(`Renamed file to: ${newFilename}.${newExtension}`);
             }
         } catch (error) {
@@ -417,7 +435,7 @@ export const useFileExplorerForGeneralLanguage = create<FileExplorerState>((set,
     },
 
 
-    handleRenameFolder: async (folder, newFolderName, parentPath, saveTemplateData) => {
+    handleRenameFolder: async (folder, newFolderName, parentPath, saveTemplateData, writeFileSync) => {
         const { templateData } = get();
         if (!templateData) return;
 
@@ -452,6 +470,7 @@ export const useFileExplorerForGeneralLanguage = create<FileExplorerState>((set,
 
                 // Use the passed saveTemplateData function
                 await saveTemplateData(updatedTemplateData);
+                await writeFileSync()
                 toast.success(`Renamed folder to: ${newFolderName}`);
             }
         } catch (error) {
@@ -476,7 +495,40 @@ export const useFileExplorerForGeneralLanguage = create<FileExplorerState>((set,
         }));
     },
 
+    handleFindFilePath: () => {
+        const { templateData, activeFileId } = get();
 
+        if (!templateData || !activeFileId) {
+            return undefined;
+        }
+
+        const activeFile = get().openFiles.find(e => e.id === activeFileId);
+
+
+        const path = findFilePath(activeFile as TemplateFile, templateData)
+
+        // console.log("Found path: ", path)
+        // console.log("templateData folder name: ",
+        // templateData.folderName )
+        const fullPath = `${templateData.folderName}/${path}`
+
+        const pathWithoutFile = fullPath?.split("/").slice(0, -1).join("/") 
+
+        if (templateData.folderName) {
+            return {
+                fileNameWithExtension: `${activeFile?.filename}${activeFile?.fileExtension ? `.${activeFile?.fileExtension}` : ""}`,
+                fullFilePath: path ? `${templateData.folderName}/${path}` : "",
+                parentFolderPath: pathWithoutFile
+            }
+        }
+        else {
+            return {
+                fileNameWithExtension: `${activeFile?.filename}${activeFile?.fileExtension ? `.${activeFile?.fileExtension}` : ""}`,
+                fullFilePath: path || "",
+                parentFolderPath: pathWithoutFile! //!Error may be null but we handle that above
+            }
+        }
+    }
 }))
 
 

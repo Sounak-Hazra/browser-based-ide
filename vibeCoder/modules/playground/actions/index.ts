@@ -71,6 +71,8 @@ export async function SaveUpdatedCode(playgroundId: string, data: TemplateFolder
             playgroundId: playgroundId
         })
 
+        console.log("Playground data updated broooooo.......")
+
         return {
             success: true,
             data: JSON.parse(JSON.stringify(updatedPlayGround.content)), //! Change here

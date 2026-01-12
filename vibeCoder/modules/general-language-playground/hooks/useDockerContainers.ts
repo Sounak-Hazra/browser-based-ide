@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { TemplateFolder } from "@/modules/playground/lib/path-to-json";
+import { toast } from "sonner";
 
 
 interface UseDockerContainersProp {
@@ -41,6 +42,8 @@ export function useDockerContainers({ playgroundId }: UseDockerContainersProp): 
     
                 setSocketUrl(responce.socketUrl)
                 setContainerId(responce.containerId)
+
+                console.log("Container initialized with ID:", responce.containerId)
             } catch (error: any) {
                 console.log(error)
                 setError(error.message || "Failed to initilize contanier.")
@@ -55,8 +58,9 @@ export function useDockerContainers({ playgroundId }: UseDockerContainersProp): 
     }, [])
 
 
-    const writeFileSync = useCallback(async ()=>{
-
+    const writeFileSync = useCallback(async () => {
+        console.log("Syncing file system with container...")
+        console.log("Container ID:", containerId)
         if(!containerId) return
         try {
             const res = await fetch(`/api/base-language-runner/writeSyncWithContainer/${containerId}`,{
@@ -69,6 +73,8 @@ export function useDockerContainers({ playgroundId }: UseDockerContainersProp): 
             if(!data.success){
                 throw new Error(data.message || "Failed to update data in container.")
             }
+
+            toast.success("File system synced with container.")
 
 
         } catch (error: any) {

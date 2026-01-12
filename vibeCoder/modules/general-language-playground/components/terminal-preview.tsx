@@ -2,6 +2,10 @@
 import React, { useState, useRef } from "react";
 import TerminalComponent from "./terminal-for-general-language";
 import { ApiErrorResponse, ApiSuccessResponse } from "@/types/api-responce";
+import { FitAddon } from "xterm-addon-fit";
+import { WebLinksAddon } from "xterm-addon-web-links";
+import { SearchAddon } from "xterm-addon-search";
+import { Terminal } from "xterm";
 
 
 interface TerminalProps {
@@ -9,17 +13,25 @@ interface TerminalProps {
     theme?: "dark" | "light";
     compileCode: (command: string) => Promise<ApiErrorResponse | ApiSuccessResponse<string>>
     socketUrl: string;
+    socket: WebSocket | null;
     containerId: string;
-    playgroundId: string
+    playgroundId: string;
+    term: Terminal | null;
+    fitAddon: FitAddon | null;
+    searchAddon: SearchAddon | null;
 }
 
 const WebContainerPreviewForGeneral = ({
     className,
     theme,
     compileCode,
+    socket,
     socketUrl,
     containerId,
-    playgroundId
+    playgroundId,
+    term,
+    fitAddon,
+    searchAddon
 }: TerminalProps) => {
 
     const [loadingState, setLoadingState] = useState(false)
@@ -84,8 +96,12 @@ const WebContainerPreviewForGeneral = ({
                 theme="dark"
                 className="h-full"
                 socketUrl={socketUrl}
+                socket={socket}
                 containerId={containerId}
-                playgroundId= {playgroundId}
+                playgroundId={playgroundId}
+                term={term}
+                fitAddon={fitAddon}
+                searchAddon={searchAddon}
             />
         </div>
     )

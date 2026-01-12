@@ -304,7 +304,7 @@
 //             terminal.open(terminalRef.current);
 
 //             fitAddon.current = fitAddonInstance;
-//             searchAddon.current = searchAddonInstance;
+//             searchAddon = searchAddonInstance;
 //             term.current = terminal;
 
 //             // Handle terminal input
@@ -562,7 +562,259 @@
 
 
 
-//New
+//New --------------------------------------------------------------------------------------------------------------------------------------
+
+// "use client";
+
+// import React, { useEffect, useRef, useState, forwardRef, useImperativeHandle, useCallback } from "react";
+// import { Button } from "@/components/ui/button";
+// import { Input } from "@/components/ui/input";
+// import { Search, Copy, Trash2, Download, X } from "lucide-react";
+// import { cn } from "@/lib/utils";
+// import { useXtermTerminal } from "../hooks/useXtermTerminal";
+// import { useContainerSocket } from "../hooks/useContainerSocket";
+// import { workingDirectoryGenerator } from "@/lib/workingDirectoryGenerator";
+
+// interface TerminalProps {
+//   className?: string;
+//   theme?: "dark" | "light";
+//   compileCode: any;
+//   socketUrl: string;
+//   containerId: string;
+//   playgroundId: string
+// }
+
+// export interface TerminalRef {
+//   writeToTerminal: (data: string) => void;
+//   clearTerminal: () => void;
+//   focusTerminal: () => void;
+// }
+
+// const TerminalComponentForGeneralLanguage = forwardRef<TerminalRef, TerminalProps>(
+//   ({ className, theme = "dark", socketUrl, playgroundId }, ref) => {
+//     const containerRef = useRef<HTMLDivElement>(null);
+//     const { term, fitAddon, searchAddon } = useXtermTerminal(theme);
+//     const socket = useContainerSocket(socketUrl, term);
+
+//     const [isConnected, setIsConnected] = useState(false);
+//     const [searchTerm, setSearchTerm] = useState("");
+//     const [showSearch, setShowSearch] = useState(false);
+
+//     // Expose terminal controls to parent
+//     useImperativeHandle(ref, () => ({
+//       writeToTerminal: (data: string) => term.current?.write(data),
+//       clearTerminal: () => {
+//         term.current?.clear();
+//         term.current?.writeln("🚀 WebContainer Terminal\r\n");
+//       },
+//       focusTerminal: () => term.current?.focus(),
+//     }));
+
+//     // Handle copy, download, clear, and search
+//     const copyTerminalContent = useCallback(async () => {
+//       const content = term.current?.getSelection();
+//       if (content) await navigator.clipboard.writeText(content);
+//     }, []);
+
+//     const downloadTerminalLog = useCallback(() => {
+//       const buffer = term.current?.buffer.active;
+//       if (!buffer) return;
+//       let content = "";
+//       for (let i = 0; i < buffer.length; i++) {
+//         const line = buffer.getLine(i);
+//         if (line) content += line.translateToString(true) + "\n";
+//       }
+//       const blob = new Blob([content], { type: "text/plain" });
+//       const url = URL.createObjectURL(blob);
+//       const a = document.createElement("a");
+//       a.href = url;
+//       a.download = `terminal-log-${new Date().toISOString().slice(0, 19)}.txt`;
+//       a.click();
+//       URL.revokeObjectURL(url);
+//     }, []);
+
+//     const searchInTerminal = useCallback(
+//       (query: string) => {
+//         if (searchAddon.current && query) searchAddon.current.findNext(query);
+//       },
+//       [searchAddon]
+//     );
+
+//     // Initialize terminal
+//     useEffect(() => {
+//       if (!containerRef.current || !term.current) return;
+//       term.current.open(containerRef.current);
+//       fitAddon.current?.fit();
+
+//       // Send every keystroke live to container
+//       term.current.onData((data) => {
+//         if (socket.current && socket.current.readyState === WebSocket.OPEN) {
+//           socket.current.send(JSON.stringify({type: "stdin", data})); // ✅ includes TAB, arrows, etc.
+//         }
+//       });
+
+//       socket.current?.addEventListener("open", () => setIsConnected(true));
+//       socket.current?.addEventListener("close", () => setIsConnected(false));
+
+
+
+//       return () => {
+//         term.current?.dispose();
+//       };
+//     }, [socketUrl]);
+
+//     useEffect(() => {
+//       if (socket.current === null) return
+//       // socket.current.send(`hello`)
+
+//       if (socket.current.readyState !== 1) return
+
+//       socket.current.send(`cd ${workingDirectoryGenerator({ projectId: playgroundId })}\r\n`)
+//     }, [socket.current])
+
+
+//     useEffect(() => {
+
+//       if(!term.current) return
+
+//       if (socket.current === null) return
+//       // socket.current.send(`hello`)
+
+//       if (socket.current.readyState !== 1) return
+//       //Terminal size sync
+
+
+//       fitAddon?.current?.fit()
+      
+//       socket.current?.send(JSON.stringify({
+//         type: "resize",
+//         cols: term.current.cols,
+//         rows: term.current.rows
+//       }))
+//     }, [term, socket.current])
+
+//     useEffect(() => {
+//       if (!containerRef.current || !term.current) return;
+
+//       const resizeObserver = new ResizeObserver(() => {
+//         if (!term.current || !fitAddon.current) return;
+
+//         fitAddon.current.fit();
+
+//         console.log(term.current.cols)
+
+//         if (socket.current && socket.current.readyState === WebSocket.OPEN) {
+
+//           // socket.current.send("\x0c")
+//           socket.current.send(
+//             JSON.stringify({
+//               type: "resize",
+//               cols: term.current.cols,
+//               rows: term.current.rows,
+//             })
+//           );
+//         }
+//       });
+
+//       resizeObserver.observe(containerRef.current);
+
+//       return () => resizeObserver.disconnect();
+//     }, []);
+
+
+//     const terminalBackground = theme === "dark" ? "#09090B" : "#FFFFFF";
+
+//     return (
+//       <div className={cn("flex flex-col h-full border rounded-lg overflow-hidden", className)}>
+//         {/* Header */}
+//         <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/50">
+//           <div className="flex items-center gap-2">
+//             <div className="flex gap-1">
+//               <div className="w-3 h-3 rounded-full bg-red-500"></div>
+//               <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+//               <div className="w-3 h-3 rounded-full bg-green-500"></div>
+//             </div>
+//             <span className="text-sm font-medium">WebContainer Terminal</span>
+//             {isConnected && (
+//               <div className="flex items-center gap-1">
+//                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+//                 <span className="text-xs text-muted-foreground">Connected</span>
+//               </div>
+//             )}
+//           </div>
+
+//           <div className="flex items-center gap-1">
+//             {showSearch && (
+//               <div className="flex items-center gap-2">
+//                 <Input
+//                   placeholder="Search..."
+//                   value={searchTerm}
+//                   onChange={(e) => {
+//                     setSearchTerm(e.target.value);
+//                     searchInTerminal(e.target.value);
+//                   }}
+//                   className="h-6 w-32 text-xs"
+//                 />
+//               </div>
+//             )}
+
+//             <Button variant="ghost" size="sm" onClick={() => setShowSearch(!showSearch)} className="h-6 w-6 p-0">
+//               <Search className="h-3 w-3" />
+//             </Button>
+
+//             <Button variant="ghost" size="sm" onClick={copyTerminalContent} className="h-6 w-6 p-0">
+//               <Copy className="h-3 w-3" />
+//             </Button>
+
+//             <Button variant="ghost" size="sm" onClick={downloadTerminalLog} className="h-6 w-6 p-0">
+//               <Download className="h-3 w-3" />
+//             </Button>
+
+//             <Button
+//               variant="ghost"
+//               size="sm"
+//               onClick={() => {
+//                 term.current?.clear();
+//                 term.current?.writeln("🚀 WebContainer Terminal\r\n");
+//               }}
+//               className="h-6 w-6 p-0"
+//             >
+//               <Trash2 className="h-3 w-3" />
+//             </Button>
+
+//             <Button
+//               variant="ghost"
+//               size="sm"
+//               onClick={() => socket.current?.close()}
+//               className="h-6 w-6 p-0"
+//             >
+//               <X className="h-3 w-3" />
+//             </Button>
+
+//           </div>
+//         </div>
+
+//         {/* Terminal */}
+//         <div className="flex-1 relative">
+//           <div
+//             ref={containerRef}
+//             className="absolute inset-0 p-2"
+//             style={{
+//               background: terminalBackground,
+//             }}
+//           />
+//         </div>
+//       </div>
+//     );
+//   }
+// );
+
+// TerminalComponentForGeneralLanguage.displayName = "TerminalComponentForGeneralLanguage";
+// export default TerminalComponentForGeneralLanguage;
+
+
+// New-----------------------------------------------------------------------------------------------------------------
+
 
 "use client";
 
@@ -574,12 +826,21 @@ import { cn } from "@/lib/utils";
 import { useXtermTerminal } from "../hooks/useXtermTerminal";
 import { useContainerSocket } from "../hooks/useContainerSocket";
 import { workingDirectoryGenerator } from "@/lib/workingDirectoryGenerator";
+import { FitAddon } from "xterm-addon-fit";
+import { WebLinksAddon } from "xterm-addon-web-links";
+import { SearchAddon } from "xterm-addon-search";
+import { Terminal } from "xterm";
+
 
 interface TerminalProps {
   className?: string;
   theme?: "dark" | "light";
   compileCode: any;
   socketUrl: string;
+  socket: WebSocket | null;
+  term: Terminal | null;
+  fitAddon: FitAddon | null;
+  searchAddon: SearchAddon | null;
   containerId: string;
   playgroundId: string
 }
@@ -591,10 +852,10 @@ export interface TerminalRef {
 }
 
 const TerminalComponentForGeneralLanguage = forwardRef<TerminalRef, TerminalProps>(
-  ({ className, theme = "dark", socketUrl, playgroundId }, ref) => {
+  ({ className, theme = "dark", socketUrl, socket, term, fitAddon, searchAddon, playgroundId }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
-    const { term, fitAddon, searchAddon } = useXtermTerminal(theme);
-    const socket = useContainerSocket(socketUrl, term);
+    // const { term, fitAddon, searchAddon } = useXtermTerminal(theme);
+    // const socket = useContainerSocket(socketUrl, term);
 
     const [isConnected, setIsConnected] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
@@ -602,22 +863,22 @@ const TerminalComponentForGeneralLanguage = forwardRef<TerminalRef, TerminalProp
 
     // Expose terminal controls to parent
     useImperativeHandle(ref, () => ({
-      writeToTerminal: (data: string) => term.current?.write(data),
+      writeToTerminal: (data: string) => term?.write(data),
       clearTerminal: () => {
-        term.current?.clear();
-        term.current?.writeln("🚀 WebContainer Terminal\r\n");
+        term?.clear();
+        term?.writeln("🚀 WebContainer Terminal\r\n");
       },
-      focusTerminal: () => term.current?.focus(),
+      focusTerminal: () => term?.focus(),
     }));
 
     // Handle copy, download, clear, and search
     const copyTerminalContent = useCallback(async () => {
-      const content = term.current?.getSelection();
+      const content = term?.getSelection();
       if (content) await navigator.clipboard.writeText(content);
     }, []);
 
     const downloadTerminalLog = useCallback(() => {
-      const buffer = term.current?.buffer.active;
+      const buffer = term?.buffer.active;
       if (!buffer) return;
       let content = "";
       for (let i = 0; i < buffer.length; i++) {
@@ -635,82 +896,82 @@ const TerminalComponentForGeneralLanguage = forwardRef<TerminalRef, TerminalProp
 
     const searchInTerminal = useCallback(
       (query: string) => {
-        if (searchAddon.current && query) searchAddon.current.findNext(query);
+        if (searchAddon && query) searchAddon.findNext(query);
       },
       [searchAddon]
     );
 
     // Initialize terminal
     useEffect(() => {
-      if (!containerRef.current || !term.current) return;
-      term.current.open(containerRef.current);
-      fitAddon.current?.fit();
+      if (!containerRef.current || !term) return;
+      term.open(containerRef.current);
+      fitAddon?.fit();
 
       // Send every keystroke live to container
-      term.current.onData((data) => {
-        if (socket.current && socket.current.readyState === WebSocket.OPEN) {
-          socket.current.send(data); // ✅ includes TAB, arrows, etc.
+      term.onData((data) => {
+        if (socket && socket.readyState === WebSocket.OPEN) {
+          socket.send(JSON.stringify({type: "stdin", data})); // ✅ includes TAB, arrows, etc.
         }
       });
 
-      socket.current?.addEventListener("open", () => setIsConnected(true));
-      socket.current?.addEventListener("close", () => setIsConnected(false));
+      socket?.addEventListener("open", () => setIsConnected(true));
+      socket?.addEventListener("close", () => setIsConnected(false));
 
 
 
       return () => {
-        term.current?.dispose();
+        term?.dispose();
       };
     }, [socketUrl]);
 
     useEffect(() => {
-      if (socket.current === null) return
-      // socket.current.send(`hello`)
+      if (socket === null) return
+      // socket.send(`hello`)
 
-      if (socket.current.readyState !== 1) return
+      if (socket.readyState !== 1) return
 
-      socket.current.send(`cd ${workingDirectoryGenerator({ projectId: playgroundId })}\r\n`)
-    }, [socket.current])
+      socket.send(`cd ${workingDirectoryGenerator({ projectId: playgroundId })}\r\n`)
+    }, [socket])
 
 
     useEffect(() => {
 
-      if(!term.current) return
+      if(!term) return
 
-      if (socket.current === null) return
-      // socket.current.send(`hello`)
+      if (socket === null) return
+      // socket.send(`hello`)
 
-      if (socket.current.readyState !== 1) return
+      if (socket.readyState !== 1) return
       //Terminal size sync
 
 
-      fitAddon?.current?.fit()
+      fitAddon?.fit()
       
-      socket.current?.send(JSON.stringify({
+      socket?.send(JSON.stringify({
         type: "resize",
-        cols: term.current.cols,
-        rows: term.current.rows
+        cols: term.cols,
+        rows: term.rows
       }))
-    }, [term, socket.current])
+    }, [term, socket])
 
     useEffect(() => {
-      if (!containerRef.current || !term.current) return;
+      if (!containerRef.current || !term) return;
 
       const resizeObserver = new ResizeObserver(() => {
-        if (!term.current || !fitAddon.current) return;
+        if (!term || !fitAddon) return;
 
-        fitAddon.current.fit();
+        fitAddon.fit();
 
-        console.log(term.current.cols)
+        console.log(term.cols)
 
-        if (socket.current && socket.current.readyState === WebSocket.OPEN) {
+        if (socket && socket.readyState === WebSocket.OPEN) {
 
-          // socket.current.send("\x0c")
-          socket.current.send(
+          // socket.send("\x0c")
+          socket.send(
             JSON.stringify({
               type: "resize",
-              cols: term.current.cols,
-              rows: term.current.rows,
+              cols: term.cols,
+              rows: term.rows,
             })
           );
         }
@@ -774,8 +1035,8 @@ const TerminalComponentForGeneralLanguage = forwardRef<TerminalRef, TerminalProp
               variant="ghost"
               size="sm"
               onClick={() => {
-                term.current?.clear();
-                term.current?.writeln("🚀 WebContainer Terminal\r\n");
+                term?.clear();
+                term?.writeln("🚀 WebContainer Terminal\r\n");
               }}
               className="h-6 w-6 p-0"
             >
@@ -785,7 +1046,7 @@ const TerminalComponentForGeneralLanguage = forwardRef<TerminalRef, TerminalProp
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => socket.current?.close()}
+              onClick={() => socket?.close()}
               className="h-6 w-6 p-0"
             >
               <X className="h-3 w-3" />

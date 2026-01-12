@@ -1,12 +1,3 @@
-// export const templatePaths = {
-//     REACT: "/starters/react-ts",
-//     NEXTJS: "/starters/nextjs-new",
-//     EXPRESS: "/starters/express-simple",
-//     VUE: "/starters/vue",
-//     HONO: "/starters/hono-nodejs-starter",
-//     ANGULAR: "/starters/angular",
-
-// };
 
 
 export const templatePaths = {
@@ -51,8 +42,32 @@ export const templatePaths = {
   WEB_PLATFORM: "/starters/web-platform",
   EXPRESS_JS: "/starters/express-js",
   PYTHON: "/starters/python-starter",
-
+  // ----------------
+  C: "/starters/c-starter",
+  CPP: "/starters/cpp-starter",
+  CSHARP: "/starters/csharp-starter",
+  JAVA: "/starters/java-starter",
+  GO: "/starters/go-starter",
+  RUST: "/starters/rust-starter",
+  KOTLIN: "/starters/kotlin-starter",
+  RUBY: "/starters/ruby-starter",
+  PHP: "/starters/php-starter",
 };
+
+
+export const imageNames = {
+  PYTHON: "python-image",
+  NODE: "node-image",
+  C: "gcc-image",
+  CPP: "gcc-image",
+  GO: "go-image",
+  JAVA: "openjdk-image",
+  RUST: "rust-image",
+  KOTLIN: "kotlin-image",
+  RUBY: "ruby-image",
+  PHP: "php-image",
+  TYPESCRIPT: "ts-node-image",
+}
 
 export const templateKeys = {
   angular: "ANGULAR",
@@ -95,8 +110,421 @@ export const templateKeys = {
   viteShadcn: "VITE_SHADCN",
   vue: "VUE",
   webPlatform: "WEB_PLATFORM",
-  python: "PYTHON"
+  python: "PYTHON",
+  c: "C",
+  cpp: "CPP",
+  csharp: "CSHARP",
+
+  java: "JAVA",
+  go: "GO",
+  rust: "RUST",
+  kotlin: "KOTLIN",
+
+  ruby: "RUBY",
+  php: "PHP",
 };
+
+
+export const templates = [
+  {
+    id: "angular",
+    name: "Angular",
+    description:
+      "Angular is a robust web framework that empowers developers to build scalable, enterprise-grade applications.",
+    icon: "/globe.svg",
+    color: "#DD0031",
+    popularity: 3,
+    tags: ["Frontend", "Fullstack", "JavaScript"],
+    features: ["Dependency Injection", "TypeScript Support", "Component System"],
+    category: "fullstack",
+  },
+  {
+    id: "astro",
+    name: "Astro + shadcn",
+    description:
+      "Astro framework with shadcn components for fast, content-first websites.",
+    icon: "/globe.svg",
+    color: "#FF5D01",
+    popularity: 3,
+    tags: ["Frontend", "Islands", "Static"],
+    features: ["Partial Hydration", "Fast Rendering", "UI Components"],
+    category: "frontend",
+  },
+  {
+    id: "boltExpo",
+    name: "Bolt Expo",
+    description:
+      "Expo-based mobile app starter kit powered by Bolt for rapid React Native development.",
+    icon: "/globe.svg",
+    color: "#000000",
+    popularity: 3,
+    tags: ["Mobile", "React Native", "Expo"],
+    features: ["Cross Platform", "Hot Reloading", "Native APIs"],
+    category: "fullstack",
+  },
+  {
+    id: "boltQwik",
+    name: "Bolt Qwik",
+    description:
+      "Ultra-fast web app starter using Qwik’s resumability architecture.",
+    icon: "/globe.svg",
+    color: "#6C4BEF",
+    popularity: 3,
+    tags: ["Frontend", "Performance", "Resumable"],
+    features: ["Lazy Execution", "SEO Friendly", "Streaming"],
+    category: "frontend",
+  },
+  {
+    id: "boltRemotion",
+    name: "Bolt Remotion",
+    description:
+      "Remotion-based starter for generating videos programmatically using React.",
+    icon: "/globe.svg",
+    color: "#FFDD00",
+    popularity: 3,
+    tags: ["Video", "Rendering", "React"],
+    features: ["Timeline Control", "Animation", "Media Export"],
+    category: "fullstack",
+  },
+  {
+    id: "boltViteReactTs",
+    name: "Bolt Vite React TS",
+    description:
+      "React + TypeScript template powered by Vite and Bolt for blazing-fast dev experience.",
+    icon: "/globe.svg",
+    color: "#61DAFB",
+    popularity: 4,
+    tags: ["React", "TypeScript", "Frontend"],
+    features: ["Fast HMR", "Type Safety", "Lightweight"],
+    category: "frontend",
+  },
+  {
+    id: "bootstrap",
+    name: "Bootstrap 5",
+    description:
+      "Responsive UI framework for building clean, production-ready web layouts.",
+    icon: "/globe.svg",
+    color: "#7952B3",
+    popularity: 4,
+    tags: ["CSS", "UI", "Frontend"],
+    features: ["Grid System", "Components", "Responsive"],
+    category: "frontend",
+  },
+  {
+    id: "egg",
+    name: "Egg.js",
+    description:
+      "Enterprise-level Node.js framework for scalable backend applications.",
+    icon: "/globe.svg",
+    color: "#FAD61D",
+    popularity: 3,
+    tags: ["Backend", "Node.js", "API"],
+    features: ["Plugin System", "MVC", "Convention Based"],
+    category: "backend",
+  },
+  {
+    id: "express",
+    name: "Express Simple",
+    description:
+      "Minimal Express.js starter template for building APIs and web servers.",
+    icon: "/globe.svg",
+    color: "#000000",
+    popularity: 5,
+    tags: ["Node.js", "Backend", "API"],
+    features: ["Routing", "Middleware", "HTTP Utilities"],
+    category: "backend",
+  },
+  {
+    id: "expressjs",
+    name: "Express-JS",
+    description:
+      "Fast, unopinionated, minimalist web framework for Node.js to build APIs and apps.",
+    icon: "/globe.svg",
+    color: "#000000",
+    popularity: 4,
+    tags: ["Backend", "Node.js", "API"],
+    features: ["Routing", "Middleware", "REST Support"],
+    category: "backend",
+  },
+  {
+    id: "graphql",
+    name: "GraphQL Server",
+    description:
+      "GraphQL API starter for structured, schema-driven backend development.",
+    icon: "/globe.svg",
+    color: "#E535AB",
+    popularity: 4,
+    tags: ["API", "Backend", "Schema"],
+    features: ["Resolvers", "Type System", "Queries & Mutations"],
+    category: "backend",
+  },
+  {
+    id: "gsapReact",
+    name: "GSAP React",
+    description:
+      "React project template with GSAP animation toolkit integration.",
+    icon: "/globe.svg",
+    color: "#88CE02",
+    popularity: 3,
+    tags: ["Animation", "Frontend", "React"],
+    features: ["Motion Effects", "Timeline", "Scroll Animations"],
+    category: "frontend",
+  },
+  {
+    id: "gsapVue",
+    name: "GSAP Vue",
+    description:
+      "Vue.js starter enhanced with GSAP for powerful animation workflows.",
+    icon: "/globe.svg",
+    color: "#4FC08D",
+    popularity: 3,
+    tags: ["Animation", "Vue", "Frontend"],
+    features: ["Timeline", "Smooth Transitions", "Scroll Effects"],
+    category: "frontend",
+  },
+  {
+    id: "gsapSvelte",
+    name: "GSAP Svelte",
+    description:
+      "Svelte project template integrated with GSAP for UI animation effects.",
+    icon: "/globe.svg",
+    color: "#FF3E00",
+    popularity: 3,
+    tags: ["Animation", "Svelte", "Frontend"],
+    features: ["Reactive Animations", "Performance", "Transitions"],
+    category: "frontend",
+  },
+  {
+    id: "gsapSveltekit",
+    name: "GSAP SvelteKit",
+    description:
+      "SvelteKit starter with GSAP for animated full-stack web experiences.",
+    icon: "/globe.svg",
+    color: "#FF3E00",
+    popularity: 3,
+    tags: ["SvelteKit", "Animation", "Fullstack"],
+    features: ["SSR", "Routing", "Motion Effects"],
+    category: "fullstack",
+  },
+  {
+    id: "gsapNext",
+    name: "GSAP Next.js",
+    description:
+      "Next.js project bundled with GSAP for cinematic frontend animations.",
+    icon: "/globe.svg",
+    color: "#000000",
+    popularity: 4,
+    tags: ["Next.js", "Animation", "Frontend"],
+    features: ["App Router", "SSR", "GSAP Motion"],
+    category: "fullstack",
+  },
+  {
+    id: "gsapNuxt",
+    name: "GSAP Nuxt",
+    description:
+      "Nuxt.js starter template with GSAP for animated Vue applications.",
+    icon: "/globe.svg",
+    color: "#00DC82",
+    popularity: 3,
+    tags: ["Nuxt", "Vue", "Animation"],
+    features: ["SSR", "Routing", "Motion Timeline"],
+    category: "fullstack",
+  },
+  {
+    id: "hono",
+    name: "Hono",
+    description:
+      "Fast, lightweight, web-standard backend framework supporting multiple runtimes.",
+    icon: "/globe.svg",
+    color: "#E36002",
+    popularity: 3,
+    tags: ["Edge", "Backend", "TypeScript"],
+    features: ["Runtime Agnostic", "Fast Router", "Minimal API"],
+    category: "backend",
+  },
+  {
+    id: "js",
+    name: "JavaScript Runtime",
+    description:
+      "Vanilla JavaScript starter for general scripting and browser-based execution.",
+    icon: "/globe.svg",
+    color: "#F7DF1E",
+    popularity: 5,
+    tags: ["Scripting", "Runtime", "Frontend"],
+    features: ["Lightweight", "Flexible", "Browser Ready"],
+    category: "frontend",
+  },
+  {
+    id: "koa",
+    name: "Koa",
+    description:
+      "Lightweight, modern Node.js framework designed for expressive middleware-based APIs.",
+    icon: "/globe.svg",
+    color: "#333333",
+    popularity: 3,
+    tags: ["Backend", "Node.js", "API"],
+    features: ["Async Middleware", "Minimal Core", "Routing"],
+    category: "backend",
+  },
+  {
+    id: "nextjs",
+    name: "Next.js",
+    description:
+      "Production-ready React framework supporting SSR, SSG, and API routes.",
+    icon: "/globe.svg",
+    color: "#000000",
+    popularity: 5,
+    tags: ["React", "Fullstack", "SSR"],
+    features: ["Server Components", "Routing", "API Layer"],
+    category: "fullstack",
+  },
+  {
+    id: "node",
+    name: "Node.js",
+    description:
+      "JavaScript runtime built on Chrome V8 — ideal for scripting and backend workflows.",
+    icon: "/globe.svg",
+    color: "#68A063",
+    popularity: 5,
+    tags: ["Runtime", "Backend", "JavaScript"],
+    features: ["Event Loop", "Package Ecosystem", "Non-blocking I/O"],
+    category: "general",
+  },
+  {
+    id: "python",
+    name: "Python",
+    description:
+      "High-level interpreted language known for clarity, scripting, and productivity.",
+    icon: "/globe.svg",
+    color: "#3776AB",
+    popularity: 5,
+    tags: ["Interpreted", "General Purpose", "Scripting"],
+    features: ["Dynamic Typing", "Rich Ecosystem", "Clean Syntax"],
+    category: "general",
+  },
+  {
+    id: "c",
+    name: "C",
+    description:
+      "Low-level, general-purpose language known for performance, memory control, and system-level programming.",
+    icon: "/globe.svg",
+    color: "#A8B9CC",
+    popularity: 5,
+    tags: ["Systems", "Low-Level", "Compiler"],
+    features: ["Manual Memory", "Procedural", "Portable"],
+    category: "general",
+  },
+  {
+    id: "cpp",
+    name: "C++",
+    description:
+      "Powerful extension of C with object-oriented and generic programming for high-performance applications.",
+    icon: "/globe.svg",
+    color: "#00599C",
+    popularity: 5,
+    tags: ["OOP", "Systems", "Compiler"],
+    features: ["Templates", "OOP", "High Performance"],
+    category: "general",
+  },
+  {
+    id: "csharp",
+    name: "C#",
+    description:
+      "Modern, versatile language built on the .NET platform for desktop, backend, and game development.",
+    icon: "/globe.svg",
+    color: "#68217A",
+    popularity: 4,
+    tags: ["OOP", "Cross-Platform", "DotNet"],
+    features: ["Strong Typing", "LINQ", "Async Support"],
+    category: "general",
+  },
+  {
+    id: "java",
+    name: "Java",
+    description:
+      "Object-oriented, JVM-based language designed for reliability and cross-platform development.",
+    icon: "/globe.svg",
+    color: "#E76F00",
+    popularity: 5,
+    tags: ["JVM", "OOP", "Compiler"],
+    features: ["Strong Typing", "Portable", "Enterprise Ready"],
+    category: "general",
+  },
+  {
+    id: "go",
+    name: "Go",
+    description:
+      "Lightweight, compiled language designed for concurrency, networking, and scalable backend systems.",
+    icon: "/globe.svg",
+    color: "#00ADD8",
+    popularity: 4,
+    tags: ["Backend", "Concurrency", "Compiler"],
+    features: ["Goroutines", "Fast Build", "Static Typing"],
+    category: "general",
+  },
+  {
+    id: "rust",
+    name: "Rust",
+    description:
+      "Memory-safe, zero-cost abstraction systems language focused on safety, speed, and reliability.",
+    icon: "/globe.svg",
+    color: "#DEA584",
+    popularity: 4,
+    tags: ["Systems", "Safe Memory", "Compiler"],
+    features: ["Ownership Model", "No GC", "High Performance"],
+    category: "general",
+  },
+  {
+    id: "kotlin",
+    name: "Kotlin",
+    description:
+      "Modern JVM language interoperable with Java, used for Android, backend, and multiplatform apps.",
+    icon: "/globe.svg",
+    color: "#A97BFF",
+    popularity: 4,
+    tags: ["JVM", "Android", "Multiplatform"],
+    features: ["Null Safety", "Coroutines", "Interop with Java"],
+    category: "general",
+  },
+  {
+    id: "typescript",
+    name: "TypeScript",
+    description:
+      "Typed superset of JavaScript that adds type safety and scalable application structure.",
+    icon: "/globe.svg",
+    color: "#3178C6",
+    popularity: 5,
+    tags: ["JavaScript", "Typed", "Transpiled"],
+    features: ["Static Typing", "Interfaces", "Tooling"],
+    category: "general",
+  },
+  {
+    id: "ruby",
+    name: "Ruby",
+    description:
+      "Dynamic, expressive scripting language known for developer productivity and elegant syntax.",
+    icon: "/globe.svg",
+    color: "#CC342D",
+    popularity: 3,
+    tags: ["Scripting", "OOP", "Web"],
+    features: ["Metaprogramming", "Dynamic Typing", "Concise Syntax"],
+    category: "general",
+  },
+  {
+    id: "php",
+    name: "PHP",
+    description:
+      "Server-side scripting language widely used for web development and content-driven applications.",
+    icon: "/globe.svg",
+    color: "#777BB4",
+    popularity: 4,
+    tags: ["Backend", "Scripting", "Web"],
+    features: ["Fast Setup", "Rich Ecosystem", "CMS Friendly"],
+    category: "general",
+  }
+] as const;
+
+
 
 export const perpous = {
   frontend: "frontend",

@@ -3,6 +3,7 @@ import Playground from "@/models/playground.models";
 import { connectDB } from "@/lib/mongoose";
 import { currentUser } from "@/modules/auth/actions";
 import { initContainer } from "../../lib/initContainer";
+import { imageNames } from "@/lib/template";
 
 export const runtime = "nodejs";
 
@@ -37,6 +38,7 @@ export async function POST(
       projectId: playground._id.toString(),
       runId: "run1",
       playground: playground.templateFiles,
+      imageName: imageNames[playground.template as keyof typeof imageNames],
     });
 
     return NextResponse.json({ success: true, ...data });
