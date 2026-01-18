@@ -68,7 +68,7 @@ const PlaygroundHomePage = () => {
         handleFindFilePath
     } = useFileExplorerForGeneralLanguage()
 
-    const { containerId, error, isLoading, socketUrl, writeFileSync } = useDockerContainers({ playgroundId: id })
+    const { containerId, error, isLoading, socketUrl, writeFileSync, removeContainer } = useDockerContainers({ playgroundId: id })
 
 
     const { sendMessage } = useSendMessage()
@@ -355,6 +355,21 @@ const PlaygroundHomePage = () => {
             return window.removeEventListener("keydown", handKeydown)
         }
     }, [handleSave])
+
+    useEffect(() => {
+        const handleUnload = () => {
+            if (!containerId) return;
+            navigator.sendBeacon(
+                `/api/base-language-runner/removeContainer/${containerId}`,
+                ""
+            );
+        };
+        window.addEventListener("beforeunload", handleUnload);
+        return () => {
+            window.removeEventListener("beforeunload", handleUnload);
+        };
+    }, [containerId]);
+
 
     if (error) {
         return (

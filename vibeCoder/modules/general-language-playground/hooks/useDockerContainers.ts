@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { TemplateFolder } from "@/modules/playground/lib/path-to-json";
 import { toast } from "sonner";
 
 
@@ -13,6 +12,7 @@ interface UseWebContainersReturn {
     writeFileSync: () => Promise<void>,
     socketUrl: string | null,
     containerId: string | null,
+    removeContainer: () => Promise<void>
 }
 
 export function useDockerContainers({ playgroundId }: UseDockerContainersProp): UseWebContainersReturn {
@@ -29,17 +29,17 @@ export function useDockerContainers({ playgroundId }: UseDockerContainersProp): 
                 const initilizeContainer = await fetch(`/api/base-language-runner/init/${playgroundId}`, {
                     method: "POST"
                 })
-    
+
                 const responce = await initilizeContainer.json()
-    
+
                 if (!responce.success) {
                     throw new Error(responce.message || "Unable to initilize container.")
                 }
-    
+
                 if (!responce.socketUrl || !responce.containerId) {
                     throw new Error(responce.message || "Failed to load playground")
                 }
-    
+
                 setSocketUrl(responce.socketUrl)
                 setContainerId(responce.containerId)
 
@@ -59,18 +59,16 @@ export function useDockerContainers({ playgroundId }: UseDockerContainersProp): 
 
 
     const writeFileSync = useCallback(async () => {
-        console.log("Syncing file system with container...")
-        console.log("Container ID:", containerId)
-        if(!containerId) return
+        if (!containerId) return
         try {
-            const res = await fetch(`/api/base-language-runner/writeSyncWithContainer/${containerId}`,{
+            const res = await fetch(`/api/base-language-runner/writeSyncWithContainer/${containerId}`, {
                 method: "POST",
-                body: JSON.stringify({playgroundId: playgroundId})
+                body: JSON.stringify({ playgroundId: playgroundId })
             })
 
             const data = await res.json()
 
-            if(!data.success){
+            if (!data.success) {
                 throw new Error(data.message || "Failed to update data in container.")
             }
 
@@ -80,8 +78,24 @@ export function useDockerContainers({ playgroundId }: UseDockerContainersProp): 
         } catch (error: unknown) {
             console.log(error)
             setError((error as any).message)
-        } finally{
+        } finally {
             setIsLoading(false)
+        }
+    }, [containerId])
+
+
+    const removeContainer = useCallback(async () => {
+        if (!containerId) {
+            return
+        }
+
+        try {
+            const res = await fetch(`/api/base-language-runner/removeContainer/${containerId}`, {
+                method: "POST",
+            })
+
+        } catch (error) {
+
         }
     }, [containerId])
 
@@ -91,7 +105,8 @@ export function useDockerContainers({ playgroundId }: UseDockerContainersProp): 
         isLoading,
         writeFileSync,
         containerId: containerId,
-        socketUrl: socketUrl
+        socketUrl: socketUrl,
+        removeContainer
     }
 
 }
