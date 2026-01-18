@@ -2,14 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import Playground from "@/models/playground.models";
 import { connectDB } from "@/lib/mongoose";
 import { currentUser } from "@/modules/auth/actions";
-import { initContainer } from "../../../../../backend/lib/initContainer";
 import { writeSyncContainer } from "../../lib/writeSyncContainer";
 
 export const runtime = "nodejs";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   await connectDB();
   try {
@@ -43,10 +42,10 @@ export async function POST(
     })
 
     return NextResponse.json({ success: true, message: "Files sinced with container." });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("❌ Container init failed:", err);
     return NextResponse.json(
-      { success: false, message: err.message || "Internal server error" },
+      { success: false, message: err instanceof Error ? err.message : "Internal server error" },
       { status: 500 }
     );
   }

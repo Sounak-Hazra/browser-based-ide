@@ -32,11 +32,11 @@ export async function getPlaygroundById(id: string): Promise<ApiSuccessResponse<
             data: JSON.parse(JSON.stringify(playGround)),
             message: "Playground fetched successfully"
         }
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.log(error)
         return {
             success: false,
-            message: error.maeesge || "Unable to get playground."
+            message: (error as any).message || "Unable to get playground."
         }
     }
 }
@@ -80,11 +80,11 @@ export async function SaveUpdatedCode(playgroundId: string, data: TemplateFolder
             message: "Playground fetched successfully"
         }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.log(error)
         return {
             success: false,
-            message: error.maeesge || "Unable to get playground.",
+            message: (error as any).message || "Unable to get playground.",
             data: null
         }
     }

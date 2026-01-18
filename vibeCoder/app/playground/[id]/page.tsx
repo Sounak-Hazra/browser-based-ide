@@ -6,6 +6,10 @@ import { Separator } from '@/components/ui/separator'
 import { SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { createConversation, fetchMessages } from '@/modules/aiChat/actons'
+import { useChatStore } from '@/modules/aiChat/hooks/useChats'
+import { useSendMessage } from '@/modules/aiChat/hooks/useSendMesssage'
+import { useCurrentUser } from '@/modules/auth/hooks/useCurrentUser'
 import LoadingStep from '@/modules/playground/components/loader'
 import PlaygroundEditor from '@/modules/playground/components/playground-editor'
 import { TemplateFileTree } from '@/modules/playground/components/playground-explorer'
@@ -17,17 +21,22 @@ import { findFilePath } from '@/modules/playground/lib'
 import { TemplateFile, TemplateFolder } from '@/modules/playground/lib/path-to-json'
 import WebContainerPreview from '@/modules/webContainers/components/web-container-preview'
 import { useWebContainers } from '@/modules/webContainers/hooks/useWebContainers'
-import { AlertCircle, Bot, FileText, FolderOpen, Save, Settings, X } from 'lucide-react'
-import { useParams, usePathname } from 'next/navigation'
-import React, { use, useCallback, useEffect, useState } from 'react'
+import { AlertCircle, FileText, FolderOpen, Save, Settings, X } from 'lucide-react'
+import { useParams } from 'next/navigation'
+import React, { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 const PlaygroundHomePage = () => {
 
     const { id } = useParams<{ id: string }>()
     const [isPreviewVisible, setIsPreviewVisible] = useState(false)
-
+    const [conversationId, setConversationId] = useState<string | undefined>(undefined);
     const { playGroundData, templateData, saveTemplate, error, isLoading } = usePlayground(id)
+    const { addMessage, appendToLastAssistant, finishStreaming, messages, reset, addMessages } = useChatStore()
+
+    const { sendMessage } = useSendMessage()
+
+    const user = useCurrentUser();
 
     const {
         setTemplateData,
@@ -49,7 +58,6 @@ const PlaygroundHomePage = () => {
     } = useFileExplorer()
 
     const {
-        destroy,
         error: containerError,
         instance,
         isLoading: containerLoading,
@@ -140,6 +148,14 @@ const PlaygroundHomePage = () => {
         [handleRenameFolder, saveTemplate]
     );
 
+    const wrapperForSendMessageToAi = useCallback(async (messageContent: string, model: string, type: string) => {
+        if (!conversationId) {
+            toast.error("No active conversation. Please try again later.");
+            return;
+        }
+        return sendMessage(messageContent, conversationId, model, type)
+    }, [conversationId, sendMessage]);
+
 
     const handleFileSelect = (file: TemplateFile) => {
         openFile(file)
@@ -181,7 +197,7 @@ const PlaygroundHomePage = () => {
                         return { ...item, content: fileToSave.content }
                     }
                     return item
-                }) 
+                })
 
             updatedTemplateData.items = updateFileContent(
                 updatedTemplateData.items
@@ -198,7 +214,7 @@ const PlaygroundHomePage = () => {
             }
 
             const newTemplateData = await saveTemplate(updatedTemplateData || updatedTemplateData)
-            setTemplateData(newTemplateData || updatedTemplateData)
+            setTemplateData(updatedTemplateData)
 
             const updatedOpenFiles = openFiles.map((file) =>
                 file.id === targetedFileId
@@ -266,6 +282,32 @@ const PlaygroundHomePage = () => {
             return window.removeEventListener("keydown", handKeydown)
         }
     }, [handleSave])
+
+    const createNewConversationWrapper = useCallback(async () => {
+        if (!user) {
+            toast.error("You must be logged in to create a conversation");
+            return;
+        }
+        const conversationId = await createConversation(user?.id);
+        setConversationId(conversationId!)
+    }, [user]);
+
+    const fetchMessagesWrapper = useCallback(async (conversationId: string) => {
+        const messages = await fetchMessages(conversationId);
+        // Assuming messages is an array of message objects
+        addMessages(messages);
+    }, [addMessages]);
+
+    /* eslint-disable react-hooks/set-state-in-effect */
+    useEffect(() => {
+        if (conversationId) { //Moving to another conversation
+            reset()
+            fetchMessagesWrapper(conversationId)
+        } else { //Creating new conversation
+            createNewConversationWrapper()
+        };
+    }, [conversationId, user, fetchMessagesWrapper, createNewConversationWrapper])
+    /* eslint-disable react-hooks/set-state-in-effect */
 
     if (error) {
         return (
@@ -387,10 +429,17 @@ const PlaygroundHomePage = () => {
                                     <TooltipContent>Save (Ctrl + Shift + s)</TooltipContent>
                                 </Tooltip>
 
-                                <ToggleAI 
+                                <ToggleAI
                                     isEnabled={aiSuggestions.isEnabled}
                                     onToggle={aiSuggestions.toggleEnabled}
                                     suggestionLoading={aiSuggestions.loading}
+                                    addMessage={addMessage}
+                                    appendToLastAssistant={appendToLastAssistant}
+                                    finishStreaming={finishStreaming}
+                                    messages={messages}
+                                    reset={reset}
+                                    addMessages={addMessages}
+                                    sendMessage={wrapperForSendMessageToAi}
                                 />
 
                                 <DropdownMenu>
@@ -471,12 +520,12 @@ const PlaygroundHomePage = () => {
                                                     activeFile={activeFile}
                                                     content={activeFile?.content || ""}
                                                     onContentChange={(value) => activeFileId && updateFileContent(activeFileId, value)}
-                                                    suggestion = {aiSuggestions.suggestion}
-                                                    suggestionLoading = {aiSuggestions.loading}
-                                                    suggestionPosition = {aiSuggestions.position}
-                                                    onAcceptSuggestion = {(editor, monaco)=>aiSuggestions.acceptSuggestion(editor, monaco)}
-                                                    onRejectSuggestion = {(editor)=>aiSuggestions.rejectSuggestion(editor)}
-                                                    onTriggerSuggestion = {(type, editor)=>aiSuggestions.fetchSuggestion(type, editor)}
+                                                    suggestion={aiSuggestions.suggestion}
+                                                    suggestionLoading={aiSuggestions.loading}
+                                                    suggestionPosition={aiSuggestions.position}
+                                                    onAcceptSuggestion={(editor, monaco) => aiSuggestions.acceptSuggestion(editor, monaco)}
+                                                    onRejectSuggestion={(editor) => aiSuggestions.rejectSuggestion(editor)}
+                                                    onTriggerSuggestion={(type, editor) => aiSuggestions.fetchSuggestion(type, editor)}
                                                 />
                                             </ResizablePanel>
 

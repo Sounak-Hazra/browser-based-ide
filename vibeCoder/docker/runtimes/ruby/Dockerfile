@@ -3,22 +3,22 @@
 
 FROM ruby:4.0.0-slim-bookworm
 
-# Create non-root user + workspace
-RUN useradd -m runner && mkdir -p /workspace && chown -R runner:runner /workspace
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
+ENTRYPOINT ["/entrypoint.sh"]
 
-RUN mkdir -p /workspace \
-    && chmod -R 777 /workspace
+USER root
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends time \
+ && rm -rf /var/lib/apt/lists/*
 
+RUN useradd -m -s /bin/bash runner
+RUN mkdir -p /workspace && chown -R runner:runner /workspace
+WORKDIR /workspace
+USER runner
 
 ENV USER_ID=none
 ENV PROJECT_ID=none
 ENV RUN_ID=none
 ENV CMD=""
-
-WORKDIR /workspace
-
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-ENTRYPOINT ["/entrypoint.sh"]

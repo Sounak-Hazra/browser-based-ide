@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Playground from "@/models/playground.models";
 import TemplatesFilesModel from "@/models/templateFile.models";
 
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function validateJson(data: any): boolean{
     try {
         JSON.parse(JSON.stringify(data))
@@ -16,11 +16,12 @@ function validateJson(data: any): boolean{
         return false
     }
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const { id } = await params;

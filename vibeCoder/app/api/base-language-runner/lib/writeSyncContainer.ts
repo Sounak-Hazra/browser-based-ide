@@ -1,4 +1,4 @@
-import { TemplateFile, TemplateFolder, TemplateItem } from "@/modules/playground/lib/path-to-json";
+import { TemplateFolder } from "@/modules/playground/lib/path-to-json";
 import Docker from "dockerode";
 import { contentToTar } from "./fileTreeToTar";
 import { workingDirectoryGenerator } from "@/lib/workingDirectoryGenerator";

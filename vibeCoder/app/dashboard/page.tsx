@@ -3,7 +3,6 @@ import AddNewButton from '@/modules/dahboard/components/add-new-button'
 import AddRepo from '@/modules/dahboard/components/add-new-repo'
 import EmptyState from '@/modules/dahboard/components/empty-state'
 import ProjectTable from '@/modules/dahboard/components/project-table'
-import React from 'react'
 
 const Page = async () => {
 

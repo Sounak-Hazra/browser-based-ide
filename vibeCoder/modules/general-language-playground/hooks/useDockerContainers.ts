@@ -44,9 +44,9 @@ export function useDockerContainers({ playgroundId }: UseDockerContainersProp): 
                 setContainerId(responce.containerId)
 
                 console.log("Container initialized with ID:", responce.containerId)
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.log(error)
-                setError(error.message || "Failed to initilize contanier.")
+                setError((error as any).message || "Failed to initilize contanier.")
             } finally {
                 setIsLoading(false)
             }
@@ -77,9 +77,9 @@ export function useDockerContainers({ playgroundId }: UseDockerContainersProp): 
             toast.success("File system synced with container.")
 
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.log(error)
-            setError(error.message)
+            setError((error as any).message)
         } finally{
             setIsLoading(false)
         }

@@ -9,11 +9,11 @@ export const runtime = "nodejs";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context : { params: Promise<{ id: string }> }
 ) {
   await connectDB();
   try {
-    const { id } = await params;
+    const { id } = await context.params;
     const user = await currentUser();
 
     if (!user) {

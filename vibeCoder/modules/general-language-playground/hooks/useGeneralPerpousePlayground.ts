@@ -116,14 +116,15 @@ export const usePlaygroundForGeneralLanguage = (id: string): UsePlaygroundreturn
             }
 
 
-        } catch (error: any) {
-            setError(error.message || "Unexpected error occured.")
+        } catch (error: unknown) {
+            const err = error as any;
+            setError(err.message || "Unexpected error occured.")
             console.log(error)
-            toast.error(error.message || "Unexpected error occured.")
+            toast.error(err.message || "Unexpected error occured.")
 
             return {
                 success: false,
-                message: error.message || "Failed to load playground"
+                message: err.message || "Failed to load playground"
             }
         } finally {
             setIsLoading(false)

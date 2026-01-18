@@ -57,9 +57,12 @@ export async function runInDocker(options: {
   // 🧩 Parse & flatten structure
   for (const p of playground) {
     const parsed =
-      typeof (p as any).content === "string"
-        ? JSON.parse((p as any).content)
-        : (p as any).content ?? p;
+    // @ts-expect-error: content property might be missing in type definition
+      typeof p.content === "string"
+      // @ts-expect-error: content property might be missing in type definition
+        ? JSON.parse(p.content)
+        // @ts-expect-error: content property might be missing in type definition
+        : p.content ?? p;
     const flatFiles = flattenTemplateStructure(parsed as TemplateFolder);
     files.push(...flatFiles);
   }

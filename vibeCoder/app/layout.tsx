@@ -4,6 +4,7 @@ import "./globals.css";
 import SessionWrapper from "./SessionWrapper";
 import { ThemeProvider } from "@/components/providers/them-provider";
 import { Toaster } from "@/components/ui/sonner";
+import Providers from "./QueryProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en"
       className="dark"
-     style= {{ "color-scheme": "dark" }}
+     style= {{ colorScheme: "dark" }}
     >
   <body
     className={`${geistSans.variable} ${geistMono.variable} antialiased`}
@@ -43,8 +44,8 @@ export default function RootLayout({
 
         <div className="flex flex-col min-h-screen">
           <Toaster />
-          <div className="flex-1">
-            {children}
+              <div className="flex-1">
+                <Providers>{children}</Providers>
           </div>
         </div>
       </ThemeProvider>

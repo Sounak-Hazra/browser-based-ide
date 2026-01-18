@@ -1,4 +1,3 @@
-import { metadata } from "@/app/layout";
 import { type NextRequest, NextResponse } from "next/server";
 
 
@@ -58,10 +57,12 @@ export async function POST(request: NextRequest) {
                 generatedAt: new Date().toISOString()
             }
         })
-    } catch (error: any) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: unknown) {
         console.error("Context analysis error ", error)
-        return NextResponse.json({ error: "Internal server error", message: error.message, }, { status: 500 })
+        return NextResponse.json({ error: "Internal server error", message: (error as Error).message, }, { status: 500 })
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
 }
 
 function analyzeCodeContext(

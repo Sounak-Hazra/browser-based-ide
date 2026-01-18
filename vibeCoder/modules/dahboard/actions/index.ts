@@ -60,11 +60,11 @@ export async function createPlayground(data: PlaygroundCreate): Promise<ApiSucce
             data: JSON.parse(JSON.stringify(playGround)),
             message: "Playground Created successfully."
         }
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.log(error)
         return {
             success: false,
-            message: error.message || "Failed to create project."
+            message: (error as any).message || "Failed to create project."
         }
     }
 }
@@ -85,11 +85,11 @@ export async function deletePlayground(_id: string): Promise<ApiSuccessResponse<
             data: true,
             message: "Playground Created successfully."
         }
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.log(error)
         return {
             success: false,
-            message: error.message || "Falied to delete playground."
+            message: (error as any).message || "Falied to delete playground."
         }
     }
 }
@@ -109,12 +109,12 @@ export async function editProjectById(id: string, data: { title: string, descrip
             message: "Successfully Updated.",
             data: null
         }
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.log(error)
         return {
             success: false,
-            message: error.message || "Failed to update project details",
-            error: error.message || "Failed to update project details",
+            message: (error as any).message || "Failed to update project details",
+            error: (error as any).message || "Failed to update project details",
         }
     }
 }
@@ -152,11 +152,11 @@ export async function duplaicatePlayground(id: string): Promise<ApiSuccessRespon
             message: "Playground Duplicated successfully"
         }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.log(error)
         return {
             success: false,
-            message: error.message || "Failed to duplicate playground."
+            message: (error as any).message || "Failed to duplicate playground."
         }
     }
 
@@ -209,11 +209,11 @@ export async function toggleFavouritPlayground(id: string): Promise<ApiSuccessRe
 
         
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.log(error)
         return {
             success: false,
-            message: error.message || "Server error."
+            message: (error as any).message || "Server error."
         }
     }
 }

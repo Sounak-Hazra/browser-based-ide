@@ -13,11 +13,10 @@ import { TemplateFileTree } from '@/modules/playground/components/playground-exp
 import { useFileExplorerForGeneralLanguage } from '@/modules/general-language-playground/hooks/useFIleExplorerForGeneralLanguages'
 import { findFilePath } from '@/modules/playground/lib'
 import { TemplateFile, TemplateFolder } from '@/modules/playground/lib/path-to-json'
-import { AlertCircle, Bot, FileText, FolderOpen, Save, Settings, X } from 'lucide-react'
+import { AlertCircle, FileText, FolderOpen, Save, Settings, X } from 'lucide-react'
 import { useParams, } from 'next/navigation'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import TerminalComponentForGeneralLanguage from '@/modules/general-language-playground/components/terminal-for-general-language'
 import RunButton from '@/modules/general-language-playground/components/run-button'
 import WebContainerPreviewForGeneral from '@/modules/general-language-playground/components/terminal-preview'
 import { useDockerContainers } from '@/modules/general-language-playground/hooks/useDockerContainers'
@@ -29,13 +28,23 @@ import { useXtermTerminal } from '@/modules/general-language-playground/hooks/us
 import { useContainerSocket } from '@/modules/general-language-playground/hooks/useContainerSocket'
 import { useStatsStore } from '@/modules/general-language-playground/hooks/useStatsRun'
 import RunWithStatsPopOver from '@/modules/general-language-playground/components/runWithStats'
+import { useChatStore } from '@/modules/aiChat/hooks/useChats'
+import { useCurrentUser } from '@/modules/auth/hooks/useCurrentUser'
+import { createConversation, fetchMessages } from '@/modules/aiChat/actons'
+import { useSendMessage } from '@/modules/aiChat/hooks/useSendMesssage'
 
 const PlaygroundHomePage = () => {
 
     const { id } = useParams<{ id: string }>()
     const [isPreviewVisible, setIsPreviewVisible] = useState(false)
-    const [runButtonIsLoading, setRunButtonIsLoading] = useState(false)
-    const terminalRef = useRef<any>(null);
+    // const [runButtonIsLoading, setRunButtonIsLoading] = useState(false)
+    // const terminalRef = useRef<any>(null);
+    const [conversationId, setConversationId] = useState<string | undefined>(undefined);
+
+    const { addMessage, appendToLastAssistant, finishStreaming, messages, reset, addMessages } = useChatStore()
+
+
+    const user = useCurrentUser();
 
     const { playGroundData, templateData, saveTemplate, compile, } = usePlaygroundForGeneralLanguage(id)
 
@@ -62,24 +71,20 @@ const PlaygroundHomePage = () => {
     const { containerId, error, isLoading, socketUrl, writeFileSync } = useDockerContainers({ playgroundId: id })
 
 
-
-    // const lastSyncedContentRef = useRef<Map<string, string>>(new Map());
+    const { sendMessage } = useSendMessage()
 
     const { run } = useRunCommand({ findFilePath: handleFindFilePath, getSocket: () => useSocketStore.getState().socket, projectId: id })
 
     const { runWithStats } = useRunCommandWithStats({ findFilePath: handleFindFilePath, getSocket: () => useSocketStore.getState().socket, projectId: id })
     const aiSuggestions = useAiSuggestion()
 
-    const {addStats, clearStats,clearStatsForaFile, stats} = useStatsStore()
+    const { addStats, clearStats, clearStatsForaFile, stats } = useStatsStore()
 
     const { term, fitAddon, searchAddon } = useXtermTerminal("dark");
     const socket = useContainerSocket(socketUrl, term, (stats) => {
-        console.log("Received stats from socket:", stats);
-        console.log("Active File ID:", useFileExplorerForGeneralLanguage.getState().activeFileId);
-
         const activeFileId = useFileExplorerForGeneralLanguage.getState().activeFileId;
         if (!activeFileId) return;
-        
+
         addStats(activeFileId, stats);
     });
 
@@ -109,21 +114,21 @@ const PlaygroundHomePage = () => {
         (newFolder: TemplateFolder, parentPath: string) => {
             return handleAddFolder(newFolder, parentPath, saveTemplate, writeFileSync);
         },
-        [handleAddFolder, saveTemplate, containerId]
+        [handleAddFolder, saveTemplate, containerId, writeFileSync]
     );
 
     const wrappedHandleDeleteFile = useCallback(
         (file: TemplateFile, parentPath: string) => {
             return handleDeleteFile(file, parentPath, saveTemplate, writeFileSync);
         },
-        [handleDeleteFile, saveTemplate, containerId]
+        [handleDeleteFile, saveTemplate, containerId, writeFileSync]
     );
 
     const wrappedHandleDeleteFolder = useCallback(
         (folder: TemplateFolder, parentPath: string) => {
             return handleDeleteFolder(folder, parentPath, saveTemplate, writeFileSync);
         },
-        [handleDeleteFolder, saveTemplate, containerId]
+        [handleDeleteFolder, saveTemplate, containerId, writeFileSync]
     );
 
     const wrappedHandleRenameFile = useCallback(
@@ -142,7 +147,7 @@ const PlaygroundHomePage = () => {
                 writeFileSync
             );
         },
-        [handleRenameFile, saveTemplate, containerId]
+        [handleRenameFile, saveTemplate, containerId, writeFileSync]
     );
 
     const wrappedHandleRenameFolder = useCallback(
@@ -155,7 +160,7 @@ const PlaygroundHomePage = () => {
                 writeFileSync
             );
         },
-        [handleRenameFolder, saveTemplate]
+        [handleRenameFolder, saveTemplate, containerId, writeFileSync]
     );
 
 
@@ -165,40 +170,49 @@ const PlaygroundHomePage = () => {
 
     const wrapperForCompile = useCallback((command: string) => {
         return compile(templateData!, command, id)
-    }, [templateData, id, containerId])
+    }, [templateData, id, containerId, compile])
 
-    const wrapperForCompileSelectedFile = useCallback(async () => {
-        const selectedFile = openFiles.find((file) => file.id === activeFileId);
-        if (!selectedFile) {
-            toast.error("No file selected for compilation");
-            return;
-        }
+    // const wrapperForCompileSelectedFile = useCallback(async () => {
+    //     const selectedFile = openFiles.find((file) => file.id === activeFileId);
+    //     if (!selectedFile) {
+    //         toast.error("No file selected for compilation");
+    //         return;
+    //     }
 
-        try {
-            setRunButtonIsLoading(true);
-            const requireCommand = getRunnerCommand(selectedFile.filename, selectedFile.fileExtension);
-            const data = await compile(templateData!, requireCommand, id, selectedFile);
+    //     try {
+    //         setRunButtonIsLoading(true);
+    //         const requireCommand = getRunnerCommand(selectedFile.filename, selectedFile.fileExtension);
+    //         const data = await compile(templateData!, requireCommand, id, selectedFile);
 
-            return {
-                success: data.success,
-                data: data.data,
-                message: data.message
-            }
-        } catch (error) {
-            console.error("Error during compilation:", error);
-            toast.error("Compilation failed");
-            return {
-                success: false,
-                data: "",
-                message: "Compilation failed"
-            }
-        } finally {
-            setRunButtonIsLoading(false);
-        }
-    }, [templateData, id, activeFileId, openFiles, containerId]);
+    //         return {
+    //             success: data.success,
+    //             data: data.data,
+    //             message: data.message
+    //         }
+    //     } catch (error) {
+    //         console.error("Error during compilation:", error);
+    //         toast.error("Compilation failed");
+    //         return {
+    //             success: false,
+    //             data: "",
+    //             message: "Compilation failed"
+    //         }
+    //     } finally {
+    //         setRunButtonIsLoading(false);
+    //     }
+    // }, [templateData, id, activeFileId, openFiles, containerId]);
 
     const activeFile = openFiles.find((file) => file.id === activeFileId);
     const hasUnsavedChanges = openFiles.some((file) => file.hasUnsavedChanges)
+
+
+    const wrapperForSendMessageToAi = useCallback(async (messageContent: string, model: string, type: string) => {
+        if (!conversationId) {
+            toast.error("No active conversation. Please try again later.");
+            return;
+        }
+        return sendMessage(messageContent, conversationId, model, type)
+    }, [conversationId, sendMessage]);
 
     const handleSave = useCallback(async (fileId?: string) => {   //Web container part need to change
         const targetedFileId = fileId || activeFileId;
@@ -240,9 +254,6 @@ const PlaygroundHomePage = () => {
                 updatedTemplateData.items
             )
 
-            console.log("updated templated data after update", updatedTemplateData)
-
-
             const newTemplateData = await saveTemplate(updatedTemplateData)
             console.log("New Template data", newTemplateData)
             // setTemplateData(newTemplateData || updatedTemplateData)
@@ -278,7 +289,8 @@ const PlaygroundHomePage = () => {
         openFiles,
         saveTemplate,
         setTemplateData,
-        setOpenFiles
+        setOpenFiles,
+        writeFileSync
     ])
 
     const handleSaveAll = async () => {
@@ -298,6 +310,31 @@ const PlaygroundHomePage = () => {
         }
     }
 
+    const createNewConversationWrapper = useCallback(async () => {
+        if (!user) {
+            toast.error("You must be logged in to create a conversation");
+            return;
+        }
+        const conversationId = await createConversation(user?.id);
+        setConversationId(conversationId!)
+    }, [user]);
+
+    const fetchMessagesWrapper = useCallback(async (conversationId: string) => {
+        const messages = await fetchMessages(conversationId);
+        // Assuming messages is an array of message objects
+        addMessages(messages);
+    }, [addMessages]);
+
+    /* eslint-disable react-hooks/set-state-in-effect */
+    useEffect(() => {
+        if (conversationId) { //Moving to another conversation
+            reset()
+            fetchMessagesWrapper(conversationId)
+        } else { //Creating new conversation
+            createNewConversationWrapper()
+        };
+    }, [conversationId, user, createNewConversationWrapper, fetchMessagesWrapper])
+    /* eslint-disable react-hooks/set-state-in-effect */
 
     useEffect(() => {
         const handKeydown = (e: KeyboardEvent) => {
@@ -462,6 +499,13 @@ const PlaygroundHomePage = () => {
                                     isEnabled={aiSuggestions.isEnabled}
                                     onToggle={aiSuggestions.toggleEnabled}
                                     suggestionLoading={aiSuggestions.loading}
+                                    addMessage={addMessage}
+                                    appendToLastAssistant={appendToLastAssistant}
+                                    finishStreaming={finishStreaming}
+                                    messages={messages}
+                                    reset={reset}
+                                    addMessages={addMessages}
+                                    sendMessage={wrapperForSendMessageToAi}
                                 />
 
                                 <DropdownMenu>

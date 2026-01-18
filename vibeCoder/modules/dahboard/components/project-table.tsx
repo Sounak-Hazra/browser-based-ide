@@ -120,8 +120,8 @@ export default function ProjectTable({
             toast(res.message || "Successfull")
             router.refresh()
             return true
-        } catch (error: any) {
-            toast(error.message || "unexpected error occured.")
+        } catch (error: unknown) {
+            toast((error as any).message || "unexpected error occured.")
             return false
         }
     };

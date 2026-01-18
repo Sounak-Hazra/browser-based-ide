@@ -10,50 +10,50 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { 
   Bot, 
-  Code, 
   FileText, 
-  Import, 
   Loader2,
   Power,
   PowerOff,
-  Braces,
   Variable
 } from "lucide-react";
 import React from "react";
 import { cn } from "@/lib/utils";
 // import { AIChatSidePanel } from "@/features/ai-chat/components/ai-chat-sidepanel";
-
+import { AIChatSidePanel } from "@/modules/aiChat/component/aiSidePanet";
+import type { ChatMessage } from "@/modules/aiChat/hooks/useChats";
 
 interface ToggleAIProps {
   isEnabled: boolean;
   onToggle: (value: boolean) => void;
-  
   suggestionLoading: boolean;
   loadingProgress?: number;
   activeFeature?: string;
+  addMessage: (message: ChatMessage) => void;
+  appendToLastAssistant: (content: string) => void;
+  finishStreaming: () => void;
+  messages: ChatMessage[];
+  reset: () => void;
+  addMessages: (messages: ChatMessage[]) => void;
+  sendMessage: (messageContent: string, model: string, type: string) => Promise<void>;
 }
 
 const ToggleAI: React.FC<ToggleAIProps> = ({
   isEnabled,
   onToggle,
-
   suggestionLoading,
   loadingProgress = 0,
   activeFeature,
+  addMessage,
+  appendToLastAssistant,
+  finishStreaming,
+  messages,
+  reset,
+  addMessages,
+  sendMessage,
 }) => {
   const [isChatOpen, setIsChatOpen] = useState(false);
 
@@ -191,6 +191,19 @@ const ToggleAI: React.FC<ToggleAIProps> = ({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <AIChatSidePanel
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        theme="dark"
+        addMessage={addMessage}
+        appendToLastAssistant={appendToLastAssistant}
+        finishStreaming={finishStreaming}
+        messages={messages}
+        reset={reset}
+        addMessages={addMessages}
+        sendMessage={sendMessage}
+      />
 
     </>
   );

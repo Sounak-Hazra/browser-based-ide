@@ -1,4 +1,3 @@
-import { FlickeringGrid } from "@/components/ui/flickering-grid";
 import Footer from "@/modules/home/components/footer";
 import Header from "@/modules/home/components/header";
 import { Metadata } from "next";

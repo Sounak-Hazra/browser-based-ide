@@ -71,10 +71,11 @@ export const usePlayground = (id: string): UsePlaygroundreturn => {
                     });
                 }
             }
-        } catch (error: any) {
-            setError(error.message || "Unexpected error occured.")
+        } catch (error: unknown) {
+            const err = error as any;
+            setError(err.message || "Unexpected error occured.")
             console.log(error)
-            toast.error(error.message || "Unexpected error occured.")
+            toast.error(err.message || "Unexpected error occured.")
         } finally {
             setIsLoading(false)
         }
